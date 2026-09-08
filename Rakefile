@@ -11,6 +11,7 @@
 
 $LOAD_PATH.unshift File.expand_path('surfaces/ruby/lib', __dir__)
 
+require 'fileutils'
 require 'b1/conformance'
 
 RED = "\e[31m"
@@ -132,3 +133,18 @@ end
 
 desc 'Build, conform, probe'
 task verify: %i[build conform probe]
+
+desc 'Generate the executive handoff from repository state'
+task :report do
+  require 'b1/report'
+  out = File.join(__dir__, 'state', 'executive-handoff.md')
+  FileUtils.mkdir_p(File.dirname(out))
+  File.write(out, B1::Report.new.to_markdown)
+  puts ok("wrote #{out.sub(__dir__ + '/', '')}")
+end
+
+desc 'Compile a scene written in the authoring DSL'
+task :compile, [:scene] do |_t, args|
+  abort(bad('usage: rake compile[examples/scene.b1.rb]')) if args[:scene].nil?
+  sh "ruby surfaces/ruby/compile_dsl.rb #{args[:scene]}"
+end

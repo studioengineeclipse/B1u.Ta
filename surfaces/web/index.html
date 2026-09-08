@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B1 Review Surface</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --fg: #1c1b18; --dim: #6b675e; --line: #e2ded4;
+    --panel: #ffffff; --accent: #4a6d52; --warn: #8a6d1f; --bad: #8c3a3a;
+    --ok-bg: #e3efe5; --warn-bg: #f7efd8; --bad-bg: #f5e0e0; --plan-bg: #eeece7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171a; --fg: #e8e6e1; --dim: #9a968c; --line: #2e3034;
+      --panel: #1d1f23; --accent: #7fae8a; --warn: #d4b25e; --bad: #d98080;
+      --ok-bg: #23302a; --warn-bg: #322c1c; --bad-bg: #33211f; --plan-bg: #24262a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  header { padding: 2rem 1.5rem 1rem; max-width: 68rem; margin: 0 auto; }
+  h1 { font-size: 1.35rem; margin: 0 0 .3rem; letter-spacing: -0.01em; }
+  .sub { color: var(--dim); font-size: .9rem; margin: 0; }
+  main { max-width: 68rem; margin: 0 auto; padding: 0 1.5rem 4rem; }
+  section { margin: 2rem 0; }
+  h2 { font-size: 1rem; margin: 0 0 .75rem; letter-spacing: .02em; text-transform: uppercase;
+       color: var(--dim); font-weight: 600; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem 1.15rem; }
+  .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .row > .panel { flex: 1 1 15rem; }
+  .metric { font-size: 1.9rem; font-weight: 600; letter-spacing: -0.02em; }
+  .metric small { font-size: .95rem; font-weight: 400; color: var(--dim); }
+  .label { color: var(--dim); font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--dim); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+  .tag { display: inline-block; font-size: .74rem; padding: .12rem .5rem; border-radius: 4px;
+         font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
+  .INTEGRATES, .EFFECT_VERIFIED, .POSTCONDITION_VERIFIED, .VERIFIED { background: var(--ok-bg); color: var(--accent); }
+  .BUILDS, .EXECUTES, .PARTIAL { background: var(--warn-bg); color: var(--warn); }
+  .PLANNED, .NOT_EXECUTED, .UNKNOWN { background: var(--plan-bg); color: var(--dim); }
+  .IN_DOUBT, .FAILED { background: var(--bad-bg); color: var(--bad); }
+  .ladder { display: flex; gap: 2px; margin-top: .35rem; }
+  .rung { height: 5px; flex: 1; background: var(--line); border-radius: 2px; }
+  .rung.on { background: var(--accent); }
+  .empty { color: var(--dim); font-style: italic; padding: 1.2rem 0; }
+  .note { background: var(--panel); border-left: 3px solid var(--accent); padding: .8rem 1rem;
+          border-radius: 0 6px 6px 0; font-size: .88rem; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82rem; }
+  pre { overflow-x: auto; background: var(--panel); border: 1px solid var(--line);
+        border-radius: 6px; padding: .8rem 1rem; font-size: .8rem; line-height: 1.5; }
+  .prompt-section { color: var(--accent); font-weight: 600; }
+  #loader { margin: 1rem 0; }
+  input[type=file] { font: inherit; font-size: .85rem; }
+  .bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>B1 Review Surface</h1>
+  <p class="sub">Participation, generation packages, and the ledger — read from repository state.</p>
+</header>
+
+<main>
+  <div id="loader" class="panel">
+    <div class="label">Data source</div>
+    <p style="margin:.5rem 0 .7rem; font-size:.88rem;">
+      Served over HTTP this page loads state automatically. Opened straight from
+      <span class="mono">file://</span>, browsers block those reads, so select the files instead —
+      <span class="mono">state/participation.json</span> and any
+      <span class="mono">state/packages/*.json</span>.
+    </p>
+    <input type="file" id="files" multiple accept=".json">
+    <span id="status" class="sub" style="margin-left:.6rem"></span>
+  </div>
+
+  <section>
+    <h2>Participation invariant</h2>
+    <div class="row" id="summary"></div>
+    <div class="panel" style="margin-top:1rem">
+      <table id="languages">
+        <thead>
+          <tr><th>Language</th><th>Responsibility</th><th>Status</th><th style="width:8rem">Ladder</th></tr>
+        </thead>
+        <tbody><tr><td colspan="4" class="empty">No participation data loaded.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Generation packages</h2>
+    <div id="packages" class="panel">
+      <p class="empty">No packages loaded.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Quality vectors</h2>
+    <div id="quality" class="panel">
+      <p class="empty">
+        No quality vector to show. Scores are computed from observed media, and no media has been
+        generated — the packages record that as <span class="mono">NOT_EXECUTED</span> rather than
+        leaving a gap that reads like success.
+      </p>
+    </div>
+  </section>
+</main>
+
+<script>
+// Plain inline script, not a module: ES module imports are blocked from file://, and this page is
+// required to open with no build step and no server. Where a server is available the page still
+// works identically — it just fetches instead of waiting for a file to be chosen.
+(function () {
+  "use strict";
+
+  var LADDER = ["PLANNED", "BUILDS", "EXECUTES", "INTEGRATES", "EFFECT_VERIFIED", "POSTCONDITION_VERIFIED"];
+  var state = { participation: null, packages: [] };
+
+  function el(tag, attrs, children) {
+    var node = document.createElement(tag);
+    for (var k in attrs || {}) {
+      if (k === "class") node.className = attrs[k];
+      else if (k === "text") node.textContent = attrs[k];
+      else node.setAttribute(k, attrs[k]);
+    }
+    (children || []).forEach(function (c) { node.appendChild(c); });
+    return node;
+  }
+
+  function tag(status) {
+    return el("span", { class: "tag " + status, text: status });
+  }
+
+  function ladder(status) {
+    var idx = LADDER.indexOf(status);
+    var wrap = el("div", { class: "ladder" });
+    for (var i = 0; i < LADDER.length; i++) {
+      wrap.appendChild(el("div", { class: "rung" + (idx >= 0 && i <= idx ? " on" : "") }));
+    }
+    return wrap;
+  }
+
+  function renderParticipation() {
+    var p = state.participation;
+    var summary = document.getElementById("summary");
+    var tbody = document.querySelector("#languages tbody");
+    summary.textContent = "";
+    tbody.textContent = "";
+
+    if (!p) {
+      tbody.appendChild(el("tr", {}, [el("td", { colspan: "4", class: "empty",
+        text: "No participation data loaded." })]));
+      return;
+    }
+
+    var langs = p.languages || [];
+    var integrating = langs.filter(function (l) {
+      return LADDER.indexOf(l.status) >= LADDER.indexOf("INTEGRATES");
+    }).length;
+
+    function card(label, value, note) {
+      var box = el("div", { class: "panel" });
+      box.appendChild(el("div", { class: "label", text: label }));
+      var m = el("div", { class: "metric" });
+      m.appendChild(document.createTextNode(value));
+      if (note) m.appendChild(el("small", { text: " " + note }));
+      box.appendChild(m);
+      return box;
+    }
+
+    summary.appendChild(card("At INTEGRATES or above", integrating + " / 14"));
+    var bar = el("div", { class: "panel" });
+    bar.appendChild(el("div", { class: "label", text: "Global invariant" }));
+    var track = el("div", { class: "bar" });
+    track.appendChild(el("span", { style: "width:" + Math.round(integrating / 14 * 100) + "%" }));
+    bar.appendChild(track);
+    bar.appendChild(el("p", { class: "sub", style: "margin:.5rem 0 0",
+      text: "Derived by compiling and running each toolchain. Never asserted." }));
+    summary.appendChild(bar);
+
+    langs.forEach(function (l) {
+      var row = el("tr");
+      row.appendChild(el("td", { text: l.name }));
+      row.appendChild(el("td", { class: "sub", text: l.responsibility || "" }));
+      row.appendChild(el("td", {}, [tag(l.status)]));
+      row.appendChild(el("td", {}, [ladder(l.status)]));
+      tbody.appendChild(row);
+      if (l.status_basis) {
+        var basis = el("tr");
+        var cell = el("td", { colspan: "4", class: "sub", style: "padding-top:0;border-bottom:1px solid var(--line)" });
+        cell.textContent = l.status_basis;
+        basis.appendChild(cell);
+        tbody.appendChild(basis);
+      }
+    });
+  }
+
+  function renderPrompt(text) {
+    var pre = el("pre");
+    text.split("\n").forEach(function (line, i) {
+      var m = line.match(/^([A-Z][A-Z ]+\.)/);
+      if (m) {
+        pre.appendChild(el("span", { class: "prompt-section", text: m[1] }));
+        pre.appendChild(document.createTextNode(line.slice(m[1].length) + "\n"));
+      } else {
+        pre.appendChild(document.createTextNode(line + "\n"));
+      }
+    });
+    return pre;
+  }
+
+  function renderPackages() {
+    var host = document.getElementById("packages");
+    host.textContent = "";
+
+    if (!state.packages.length) {
+      host.appendChild(el("p", { class: "empty", text: "No packages loaded." }));
+      return;
+    }
+
+    state.packages.forEach(function (pkg) {
+      var head = el("div", { style: "display:flex;gap:.6rem;align-items:center;flex-wrap:wrap" });
+      head.appendChild(tag(pkg.execution_status || "UNKNOWN"));
+      head.appendChild(tag(pkg.outcome || "UNKNOWN"));
+      head.appendChild(el("span", { class: "mono sub", text: pkg.route || "" }));
+      host.appendChild(head);
+
+      if (pkg.route_reason) {
+        host.appendChild(el("p", { class: "sub", style: "margin:.5rem 0", text: pkg.route_reason }));
+      }
+
+      host.appendChild(el("p", { class: "mono sub", style: "margin:.3rem 0",
+        text: "IR " + (pkg.ir_digest || "") }));
+
+      var refs = pkg.reference_manifest || [];
+      if (refs.length) {
+        var table = el("table");
+        var thead = el("thead");
+        thead.appendChild(el("tr", {}, [
+          el("th", { text: "Reference" }), el("th", { text: "Role" }),
+          el("th", { text: "Bound to" }), el("th", { text: "Provider slot" })
+        ]));
+        table.appendChild(thead);
+        var tb = el("tbody");
+        refs.forEach(function (r) {
+          tb.appendChild(el("tr", {}, [
+            el("td", { class: "mono", text: r.reference_id || "" }),
+            el("td", {}, [tag(r.role || "UNKNOWN")]),
+            el("td", { class: "sub", text: (r.applies_to || []).join(", ") }),
+            el("td", { class: "mono sub", text: r.provider_slot === null ? "— unverified contract" : String(r.provider_slot) })
+          ]));
+        });
+        table.appendChild(tb);
+        host.appendChild(el("div", { style: "margin:1rem 0" }, [table]));
+      }
+
+      if (pkg.compiled_prompt) {
+        host.appendChild(el("div", { class: "label", style: "margin-top:1rem", text: "Compiled prompt" }));
+        host.appendChild(renderPrompt(pkg.compiled_prompt));
+      }
+
+      (pkg.notes || []).forEach(function (n) {
+        host.appendChild(el("p", { class: "note", style: "margin:.6rem 0", text: n }));
+      });
+    });
+  }
+
+  function ingest(name, json) {
+    if (json && json.languages && json.probe_version) state.participation = json;
+    else if (json && json.package_version) state.packages.push(json);
+    else return false;
+    return true;
+  }
+
+  function refresh() {
+    renderParticipation();
+    renderPackages();
+  }
+
+  document.getElementById("files").addEventListener("change", function (ev) {
+    var files = Array.prototype.slice.call(ev.target.files || []);
+    var status = document.getElementById("status");
+    var loaded = 0;
+    var pending = files.length;
+    if (!pending) return;
+
+    files.forEach(function (f) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          if (ingest(f.name, JSON.parse(reader.result))) loaded++;
+        } catch (e) {
+          // A file that will not parse is reported, not silently skipped.
+          status.textContent = f.name + " could not be read: " + e.message;
+        }
+        if (--pending === 0) {
+          status.textContent = loaded + " of " + files.length + " file(s) recognised";
+          refresh();
+        }
+      };
+      reader.readAsText(f);
+    });
+  });
+
+  // Where the page is served, load state directly. The failure is silent on purpose: from file://
+  // these requests are expected to fail, and an error banner for the documented case would be noise.
+  if (location.protocol !== "file:") {
+    fetch("../../state/participation.json")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { if (j) { state.participation = j; refresh(); } })
+      .catch(function () {});
+  }
+
+  refresh();
+})();
+</script>
+
+</body>
+</html>

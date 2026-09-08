@@ -125,7 +125,7 @@
       "responsibility": "Authority envelope presenter",
       "dir": "engine/dart",
       "build": null,
-      "conform": "dart run engine/dart/bin/conform.dart",
+      "conform": "cd engine/dart && dart run bin/conform.dart conform",
       "canon": "independent"
     }
   ],

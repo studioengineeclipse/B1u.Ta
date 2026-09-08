@@ -1,0 +1,13 @@
+name: b1_authority
+description: >-
+  Renders authority envelopes and continuity chains for review and approval. Pure Dart with no
+  dependencies, so it builds offline; a Flutter shell is an optional surface on top, not a
+  requirement for the component to run or be tested.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+# No dependencies. `crypto` would supply SHA-256, but a package fetch would make this the one
+# component in the verification graph that cannot be checked from a cold offline clone.

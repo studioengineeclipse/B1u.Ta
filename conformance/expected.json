@@ -6,7 +6,19 @@
       "kind": "digest",
       "digest": "27f58b7e6b2eff7e3ac87d333cf5a52f6e8a7a809cc1ec2fd39c48b34d3e6d15",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -15,7 +27,19 @@
       "kind": "digest",
       "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -24,7 +48,19 @@
       "kind": "digest",
       "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -33,7 +69,19 @@
       "kind": "digest",
       "digest": "a91b90be91863c22affbea0e90b121dfba1dd310d60ab01100161ef35dbe8df5",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -42,7 +90,19 @@
       "kind": "digest",
       "digest": "03c9b7293834b4cdda92e596043bee6af4f4e82eefd80ac1df25863ab57bcd65",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -51,7 +111,19 @@
       "kind": "digest",
       "digest": "8ca272cdc8e849a1caa3bf93a0dd17f426a503652b2c575fcc112ef9c2fa2656",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -60,7 +132,19 @@
       "kind": "error",
       "error": "B1_ERR_DEPTH",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -69,7 +153,19 @@
       "kind": "error",
       "error": "B1_ERR_DUPLICATE_KEY",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -78,7 +174,19 @@
       "kind": "error",
       "error": "B1_ERR_NONINTEGER_NUMBER",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -87,7 +195,19 @@
       "kind": "error",
       "error": "B1_ERR_NONINTEGER_NUMBER",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -96,7 +216,19 @@
       "kind": "error",
       "error": "B1_ERR_KEY_SYNTAX",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -105,7 +237,19 @@
       "kind": "error",
       "error": "B1_ERR_KEY_SYNTAX",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -114,7 +258,19 @@
       "kind": "error",
       "error": "B1_ERR_KEY_SYNTAX",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -123,7 +279,19 @@
       "kind": "error",
       "error": "B1_ERR_PARSE",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -132,7 +300,19 @@
       "kind": "error",
       "error": "B1_ERR_INVALID_UTF8",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -141,7 +321,19 @@
       "kind": "error",
       "error": "B1_ERR_INVALID_UTF8",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -150,7 +342,19 @@
       "kind": "error",
       "error": "B1_ERR_INVALID_UTF8",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -159,7 +363,19 @@
       "kind": "error",
       "error": "B1_ERR_NONINTEGER_NUMBER",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -168,7 +384,19 @@
       "kind": "error",
       "error": "B1_ERR_NONINTEGER_NUMBER",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -177,7 +405,19 @@
       "kind": "error",
       "error": "B1_ERR_PARSE",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -186,7 +426,19 @@
       "kind": "error",
       "error": "B1_ERR_PARSE",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": true
@@ -195,7 +447,19 @@
       "kind": "digest",
       "digest": "60a6fb565226c4fc31f5905be022713e433d80451d0c65ff2dfb9ac28cdc734c",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -204,7 +468,19 @@
       "kind": "digest",
       "digest": "54cba13480ca70acdbb21c0051e483167e095f97465ebb8a3a46ac8be432682d",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -213,7 +489,19 @@
       "kind": "digest",
       "digest": "d45105946d0760f5a67d2a7dc4646cf30bb6f7bfea2640d3671499bed89532d8",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -222,7 +510,19 @@
       "kind": "digest",
       "digest": "b6e0cd67682596dc49100a42d9f79aa60d456af3ade460a8c18b6e5565602433",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
@@ -231,7 +531,19 @@
       "kind": "digest",
       "digest": "443730b2fd6a2991f488771c056a3e303c228b9e94b22d31f9fb959654fd4a1d",
       "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
         "python",
+        "ruby",
+        "rust",
+        "swift",
         "typescript"
       ],
       "negative": false
