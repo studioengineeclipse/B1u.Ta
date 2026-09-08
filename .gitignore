@@ -16,3 +16,4 @@ __pycache__/
 
 # Runtime state that is regenerated, not authored.
 state/participation.json
+state/packages/

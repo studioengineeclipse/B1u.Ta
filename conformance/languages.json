@@ -9,7 +9,7 @@
       "dir": "core/c",
       "build": "make -s -C core/c",
       "conform": "core/c/build/b1conform",
-      "normative": true
+      "canon": "normative"
     },
     {
       "id": "cpp",
@@ -17,7 +17,8 @@
       "responsibility": "Media/temporal analyzer",
       "dir": "core/cpp",
       "build": "make -s -C core/cpp",
-      "conform": "core/cpp/build/b1conform"
+      "conform": "core/cpp/build/b1conform",
+      "canon": "via_c_abi"
     },
     {
       "id": "rust",
@@ -25,7 +26,8 @@
       "responsibility": "Causal ledger + authority gate",
       "dir": "core/rust",
       "build": "cargo build --quiet --manifest-path core/rust/Cargo.toml --offline",
-      "conform": "core/rust/target/debug/b1conform"
+      "conform": "core/rust/target/debug/b1conform",
+      "canon": "independent"
     },
     {
       "id": "typescript",
@@ -33,7 +35,8 @@
       "responsibility": "Canonical contract + schema generation",
       "dir": "contracts",
       "build": "tsc -p contracts/tsconfig.json",
-      "conform": "node contracts/dist/conform.js"
+      "conform": "node contracts/dist/conform.js",
+      "canon": "independent"
     },
     {
       "id": "javascript",
@@ -41,7 +44,8 @@
       "responsibility": "Zero-build browser review surface",
       "dir": "surfaces/web",
       "build": null,
-      "conform": "node surfaces/web/conform.mjs"
+      "conform": "node surfaces/web/conform.mjs",
+      "canon": "independent"
     },
     {
       "id": "go",
@@ -49,7 +53,8 @@
       "responsibility": "Orchestration daemon, discovery, job graph, CLI",
       "dir": "engine/go",
       "build": "cd engine/go && go build -o build/b1conform ./cmd/b1conform",
-      "conform": "engine/go/build/b1conform"
+      "conform": "engine/go/build/b1conform",
+      "canon": "independent"
     },
     {
       "id": "python",
@@ -57,7 +62,8 @@
       "responsibility": "Quality vector, gates, failure localization",
       "dir": "engine/python",
       "build": null,
-      "conform": "python3 engine/python/conform.py"
+      "conform": "python3 engine/python/conform.py",
+      "canon": "independent"
     },
     {
       "id": "java",
@@ -65,7 +71,8 @@
       "responsibility": "Provider-neutral compiler and prompt compilation",
       "dir": "engine/jvm/java",
       "build": "javac -d engine/jvm/java/build $(find engine/jvm/java/src -name '*.java')",
-      "conform": "java -cp engine/jvm/java/build b1.compiler.Conform"
+      "conform": "java -cp engine/jvm/java/build b1.compiler.Conform",
+      "canon": "independent"
     },
     {
       "id": "kotlin",
@@ -73,7 +80,8 @@
       "responsibility": "Continuity engine: terminal state, priority lattice",
       "dir": "engine/jvm/kotlin",
       "build": "kotlinc engine/jvm/kotlin/src/main/kotlin -include-runtime -d engine/jvm/kotlin/build/b1continuity.jar",
-      "conform": "java -jar engine/jvm/kotlin/build/b1continuity.jar"
+      "conform": "java -jar engine/jvm/kotlin/build/b1continuity.jar",
+      "canon": "independent"
     },
     {
       "id": "swift",
@@ -81,7 +89,8 @@
       "responsibility": "Reference role algebra and boundary enforcement",
       "dir": "engine/swift",
       "build": "swiftc -O -o engine/swift/build/b1reference engine/swift/Sources/B1Reference/*.swift",
-      "conform": "engine/swift/build/b1reference conform"
+      "conform": "engine/swift/build/b1reference conform",
+      "canon": "independent"
     },
     {
       "id": "csharp",
@@ -89,7 +98,8 @@
       "responsibility": "Convergence and regression gate",
       "dir": "engine/csharp/B1.Convergence",
       "build": "dotnet build engine/csharp/B1.Convergence -c Release -v quiet --nologo",
-      "conform": "dotnet engine/csharp/B1.Convergence/bin/Release/net8.0/B1.Convergence.dll conform"
+      "conform": "dotnet engine/csharp/B1.Convergence/bin/Release/net8.0/B1.Convergence.dll conform",
+      "canon": "independent"
     },
     {
       "id": "php",
@@ -97,7 +107,8 @@
       "responsibility": "Evidence library server",
       "dir": "surfaces/php",
       "build": null,
-      "conform": "php surfaces/php/conform.php"
+      "conform": "php surfaces/php/conform.php",
+      "canon": "independent"
     },
     {
       "id": "ruby",
@@ -105,7 +116,8 @@
       "responsibility": "Authoring DSL, polyglot build graph, report generation",
       "dir": "surfaces/ruby",
       "build": null,
-      "conform": "ruby surfaces/ruby/conform.rb"
+      "conform": "ruby surfaces/ruby/conform.rb",
+      "canon": "independent"
     },
     {
       "id": "dart",
@@ -113,7 +125,9 @@
       "responsibility": "Authority envelope presenter",
       "dir": "engine/dart",
       "build": null,
-      "conform": "dart run engine/dart/bin/conform.dart"
+      "conform": "dart run engine/dart/bin/conform.dart",
+      "canon": "independent"
     }
-  ]
+  ],
+  "canon_provenance_note": "How each language obtains its digest. \"normative\" is the reference implementation; \"independent\" is a separate implementation whose agreement is a genuine check on it; \"via_c_abi\" links libb1sig, so its agreement confirms the ABI boundary rather than providing a second opinion."
 }

@@ -54,8 +54,11 @@ module B1
         end
         Result.new(digest: digest, available: true)
       else
-        token = err.strip.split("\n").first.to_s.strip
-        if token.match?(B1_ERR_RE)
+        # Locate the token line rather than assuming it is first: runtimes emit banner noise on
+        # stderr (the JVM's JAVA_TOOL_OPTIONS notice, for one) that would otherwise be mistaken for
+        # the implementation's answer.
+        token = err.lines.map(&:strip).find { |l| l.match?(B1_ERR_RE) }
+        if token
           Result.new(error_token: token, available: true)
         else
           Result.new(available: false, detail: "exit #{status.exitstatus}: #{err.strip[0, 200]}")

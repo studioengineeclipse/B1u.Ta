@@ -127,6 +127,12 @@ stdout : <64 lowercase hex digits>\n
 exit   : 0 on success; non-zero with a B1_ERR_* token on stderr for a rejected document
 ```
 
+The token **MUST** appear on stderr as a line of its own. A harness **MUST** locate that line rather
+than assume it is the first: runtimes emit banner text on stderr that has nothing to do with the
+document — the JVM's `JAVA_TOOL_OPTIONS` notice is the case that caught this — and reading line one
+attributes that noise to the implementation, reporting a correct rejection as a divergence. Nothing
+other than the token line is interpreted.
+
 `conformance/fixtures/` holds the corpus. `conformance/expected.json` maps each fixture to its
 digest and, for negative fixtures, to the required `B1_ERR_*` token. `rake conform` runs every
 available language against every fixture and fails on any divergence.

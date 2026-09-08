@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -69,6 +70,25 @@ def have(tool: str) -> bool:
     return shutil.which(tool, path=env()["PATH"]) is not None
 
 
+TOKEN_RE = re.compile(r"^B1_ERR_[A-Z0-9_]+$")
+
+
+def error_token(stderr: bytes) -> str:
+    """Finds the B1_ERR_* line in stderr.
+
+    Runtimes write banner noise to stderr that has nothing to do with the document — the JVM's
+    JAVA_TOOL_OPTIONS notice is the example that caught this. Taking the first line would attribute
+    that noise to the implementation and report a correct rejection as a divergence, so the token is
+    located rather than assumed to be first.
+    """
+    for line in stderr.decode("utf-8", "replace").splitlines():
+        line = line.strip()
+        if TOKEN_RE.match(line):
+            return line
+    first = stderr.decode("utf-8", "replace").strip().splitlines()
+    return first[0][:120] if first else "NO_OUTPUT"
+
+
 def run(cmd: str, stdin: bytes | None = None, timeout: int = 600):
     return subprocess.run(
         cmd, shell=True, cwd=ROOT, env=env(), input=stdin,
@@ -86,6 +106,7 @@ def probe_language(lang: dict, expected: dict) -> dict:
         "toolchain_present": False,
         "build_status": "NOT_ATTEMPTED",
         "build_detail": None,
+        "canon": lang.get("canon", "unrecorded"),
         "conform_available": False,
         "fixtures_checked": 0,
         "fixtures_agreed": 0,
@@ -148,7 +169,7 @@ def probe_language(lang: dict, expected: dict) -> dict:
         if proc.returncode == 0:
             actual = "digest:" + proc.stdout.decode().strip()
         else:
-            actual = "error:" + proc.stderr.decode("utf-8", "replace").strip().split("\n")[0]
+            actual = "error:" + error_token(proc.stderr)
         wanted = f"{exp['kind']}:{exp[exp['kind']]}"
         if actual == wanted:
             rec["fixtures_agreed"] += 1
@@ -157,7 +178,16 @@ def probe_language(lang: dict, expected: dict) -> dict:
 
     if rec["fixtures_checked"] and rec["fixtures_agreed"] == rec["fixtures_checked"]:
         rec["status"] = "INTEGRATES"
-        rec["status_basis"] = f"agrees with the blessed corpus on all {rec['fixtures_checked']} fixtures"
+        # How the digest was obtained decides what the agreement proves. An FFI binding to the
+        # normative kernel agreeing with the normative kernel is not a second opinion, and saying
+        # "agrees" without that qualifier would overstate the evidence.
+        proof = {
+            "normative": "normative implementation; the corpus is defined by it",
+            "independent": "independent implementation, so agreement is a genuine cross-check",
+            "via_c_abi": "via the C ABI to libb1sig, so this confirms the ABI boundary rather than "
+                         "providing an independent check",
+        }.get(rec["canon"], "provenance unrecorded")
+        rec["status_basis"] = f"agrees on all {rec['fixtures_checked']} fixtures — {proof}"
     elif rec["divergences"]:
         rec["status"] = "IN_DOUBT"
         rec["status_basis"] = f"{len(rec['divergences'])} divergence(s) from the blessed corpus"

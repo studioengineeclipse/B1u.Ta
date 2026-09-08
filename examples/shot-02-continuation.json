@@ -1,0 +1,174 @@
+{
+  "ir_version": "b1-video-ir/1",
+  "objective": "Continue the walk from the accepted first segment: the subject keeps moving through the corridor while the camera tracks alongside, and the take ends mid-stride so a third segment can continue from it.",
+  "scene_mode": "continuation",
+  "duration_ms": 5000,
+  "aspect_ratio": { "w": 16, "h": 9 },
+  "target_resolution": { "width_px": 1920, "height_px": 1080 },
+  "target_frame_rate_mfps": 23976,
+
+  "characters": [
+    {
+      "id": "kage",
+      "name": "Kage",
+      "description": "Adult courier, medium build, close-cropped dark hair, carrying a canvas satchel on the left shoulder",
+      "identity_anchor": "Facial structure, the scar through the right eyebrow, and the satchel strap crossing right-shoulder-to-left-hip",
+      "costume": "Charcoal work jacket over a grey shirt, dark trousers, worn boots"
+    }
+  ],
+  "identity_constraints": [
+    { "character_id": "kage", "constraint": "Scar through the right eyebrow remains visible whenever the face is toward camera", "tolerance_mu": 150 },
+    { "character_id": "kage", "constraint": "Satchel stays on the left shoulder and does not switch sides", "tolerance_mu": 50 }
+  ],
+
+  "environment": {
+    "description": "A service corridor, concrete floor, pipework along the left wall, intermittent ceiling strip-lights",
+    "spatial_layout": "Corridor runs left to right across frame; subject moves right; camera holds on the subject's left side at roughly two metres"
+  },
+  "depth_layers": [
+    { "index": 0, "description": "Foreground: pipework passing through frame left, occluding the subject briefly" },
+    { "index": 1, "description": "Midground: the subject walking" },
+    { "index": 2, "description": "Background: the corridor receding, strip-lights repeating toward a far door" }
+  ],
+  "foreground_elements": [
+    { "id": "pipes", "name": "Wall pipework", "description": "Horizontal pipes crossing the frame, passing camera-left as the camera moves", "depth_layer": 0 }
+  ],
+  "midground_elements": [],
+  "background_elements": [
+    { "id": "far_door", "name": "Far door", "description": "A closed door at the corridor's end, remaining closed for the whole take", "depth_layer": 2 }
+  ],
+  "props": [
+    { "id": "satchel", "name": "Canvas satchel", "description": "Worn canvas bag, strap across the body, swinging slightly with the gait" }
+  ],
+
+  "lighting": {
+    "description": "Overhead strip-lights producing repeating pools of light and shadow as the subject advances",
+    "key_direction": "directly overhead, slightly behind"
+  },
+  "atmosphere": { "description": "Cool, still air; faint haze catching the strip-lights" },
+  "material_behavior": [
+    { "material": "Canvas satchel", "behavior": "swings with a delay of roughly a quarter stride behind the body, never passing through the jacket" },
+    { "material": "Jacket", "behavior": "creases at the elbow on each arm swing and settles between strides" }
+  ],
+
+  "camera_state": {
+    "position_mm": { "x": -2000, "y": 1500, "z": 0 },
+    "orientation_mdeg": { "pan": 0, "tilt": -2000, "roll": 0 },
+    "focal_length_mm": 35,
+    "framing": "medium shot, subject at roughly one-third frame width, head near the upper third line"
+  },
+  "camera_motion": [
+    {
+      "kind": "track",
+      "start_ms": 0,
+      "end_ms": 5000,
+      "magnitude_mm": 4200,
+      "subject_framing_note": "holding the subject at approximately one-third frame width throughout, matching the subject's walking speed rather than drifting ahead or behind"
+    }
+  ],
+  "lens_behavior": {
+    "description": "Fixed 35mm equivalent, no zoom",
+    "focus_behavior": "focus stays on the subject; the passing foreground pipework goes soft rather than pulling focus"
+  },
+
+  "subject_motion": [
+    {
+      "subject_id": "kage",
+      "action": "walks at a steady pace, roughly 1.4 metres per second, arms swinging in counterphase to the legs",
+      "start_ms": 0,
+      "end_ms": 5000,
+      "phase_at_start": "mid-stride, left foot in contact, right leg swinging forward",
+      "phase_at_end": "mid-stride, right foot in contact, left leg swinging forward"
+    }
+  ],
+  "secondary_motion": [
+    { "element_id": "satchel", "behavior": "swings in response to the gait, lagging the body" }
+  ],
+  "interaction_graph": [
+    { "actor_id": "pipes", "target_id": "kage", "relation": "briefly occludes", "start_ms": 2200, "end_ms": 2900 }
+  ],
+  "physics_expectations": [
+    { "subject": "kage", "expectation": "Feet make and break contact with the floor without sliding; no foot penetrates the floor plane" },
+    { "subject": "satchel", "expectation": "Swings under gravity and is constrained by the strap; it does not intersect the body" }
+  ],
+  "animation_timing": { "description": "Steady gait cycle of roughly 1.1 seconds per full stride", "beat_ms": 1100 },
+  "rhythm": { "description": "Even and unhurried; no acceleration or hesitation within the take" },
+
+  "audio_state": {
+    "present": true,
+    "description": "Footsteps on concrete with corridor reverb, faint ventilation hum",
+    "phase_note": "The footstep on the first frame lands mid-step, continuing the cadence from the previous segment rather than restarting it"
+  },
+  "narrative_state": {
+    "description": "The courier is partway along the corridor, still carrying the undelivered package",
+    "unresolved": ["The package has not been delivered", "The far door has not been reached"]
+  },
+  "visual_style": { "description": "Naturalistic, handheld-free, neutral colour with a slight cool cast from the strip-lights" },
+
+  "reference_bindings": [
+    {
+      "reference_id": "ref-kage-identity",
+      "media_digest": "b1c1:0000000000000000000000000000000000000000000000000000000000000001",
+      "role": "CHARACTER_IDENTITY",
+      "weight_ppm": 900000,
+      "applies_to": ["characters", "identity_constraints"],
+      "rationale": "Preserve the courier's face and build across segments",
+      "origin": "U"
+    },
+    {
+      "reference_id": "ref-prev-segment",
+      "media_digest": "b1c1:0000000000000000000000000000000000000000000000000000000000000002",
+      "role": "VIDEO_CONTINUITY",
+      "weight_ppm": 1000000,
+      "applies_to": ["subject_motion", "camera_motion", "continuity_constraints", "animation_timing"],
+      "rationale": "The accepted previous segment is hard temporal history; the gait phase and camera speed continue from it",
+      "origin": "M"
+    },
+    {
+      "reference_id": "ref-corridor-plate",
+      "media_digest": "b1c1:0000000000000000000000000000000000000000000000000000000000000003",
+      "role": "ENVIRONMENT",
+      "weight_ppm": 700000,
+      "applies_to": ["environment", "depth_layers", "lighting"],
+      "rationale": "Keep the corridor geometry and light spacing identical to the established location",
+      "origin": "M"
+    }
+  ],
+
+  "continuity_constraints": [
+    { "constraint": "The first frame continues the gait cycle from the previous segment's terminal state: left foot in contact, right leg swinging", "source_segment_id": "shot-01" },
+    { "constraint": "Camera lateral velocity matches the previous segment's terminal velocity; there is no restart, stop or re-acceleration at the cut", "source_segment_id": "shot-01" },
+    { "constraint": "The satchel remains on the left shoulder, mid-swing, as it was at the previous terminal frame", "source_segment_id": "shot-01" }
+  ],
+  "negative_constraints": [
+    { "forbid": "the subject stopping, turning to camera, or acknowledging the camera", "rationale": "Breaks the observational framing and forecloses continuation" },
+    { "forbid": "the far door opening or anyone else entering the corridor", "rationale": "Introduces an unplanned narrative event the next segment has not accounted for" },
+    { "forbid": "a cut, dissolve or fade within the take", "rationale": "The segment must be one continuous camera take" }
+  ],
+
+  "final_frame_requirements": {
+    "must_be_extendable": true,
+    "forbidden_endings": ["arbitrary_freeze", "celebration", "pose", "fade_out", "hard_stop", "unexplained_camera_halt", "artificial_reset", "neutral_object_reset"],
+    "unresolved_motion_required": true,
+    "terminal_state_capture": true
+  },
+  "verification_requirements": [
+    { "dimension": "character_identity_mu", "comparator": "gte", "threshold_mu": 700, "rationale": "Identity drift across segments is the failure this chain most needs to prevent" },
+    { "dimension": "continuity_start_mu", "comparator": "gte", "threshold_mu": 750, "rationale": "The first frame must be causally compatible with the previous terminal state" },
+    { "dimension": "continuity_end_mu", "comparator": "gte", "threshold_mu": 700, "rationale": "The take must leave an extendable state for the third segment" },
+    { "dimension": "artifact_severity_mu", "comparator": "lte", "threshold_mu": 250, "rationale": "Artifacts compound across a chained sequence" }
+  ],
+
+  "origin": {
+    "fields": [
+      { "path": "objective", "origin": "U" },
+      { "path": "duration_ms", "origin": "U" },
+      { "path": "camera_motion", "origin": "U" },
+      { "path": "depth_layers", "origin": "M" },
+      { "path": "material_behavior", "origin": "M" },
+      { "path": "continuity_constraints", "origin": "M" },
+      { "path": "reference_bindings", "origin": "M" },
+      { "path": "physics_expectations", "origin": "M" }
+    ]
+  }
+}
