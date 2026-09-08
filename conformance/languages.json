@@ -32,7 +32,7 @@
     {
       "id": "typescript",
       "name": "TypeScript",
-      "responsibility": "Canonical contract + schema generation",
+      "responsibility": "Canonical contract: IR and record types, generating the JSON Schema that Rust enforces at the ledger boundary",
       "dir": "contracts",
       "build": "tsc -p contracts/tsconfig.json",
       "conform": "node contracts/dist/conform.js",

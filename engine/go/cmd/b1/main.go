@@ -3,12 +3,16 @@
 //	b1 discover           show the provider capability map and the selected route
 //	b1 plan <ir.json>     run the closed loop as far as the authorized route permits
 //	b1 status             show participation and ledger state
+//	b1 score <vec.json>   apply hard gates and localize failure (Python)
+//	b1 continuity <b.json> check causal compatibility across a segment boundary (Kotlin)
+//	b1 converge <c.json>  compare a candidate against the verified best (C#)
 package main
 
 import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -43,6 +47,10 @@ b1 — B1μ-DQAS Ω13.9 orchestrator
   b1 discover           show the provider capability map and the selected route
   b1 plan <ir.json>     run the closed loop as far as the authorized route permits
   b1 status             show participation and ledger state
+
+  b1 score <vector.json>     apply hard gates and localize failure
+  b1 continuity <bound.json> check causal compatibility across a segment boundary
+  b1 converge <cmp.json>     compare a candidate against the previous verified best
 `))
 }
 
@@ -153,6 +161,53 @@ func cmdStatus() int {
 	return 0
 }
 
+// component routes an operator command to the language that owns that responsibility, over IF-1.
+//
+// Go does not reimplement any of them. Before these existed the three engines were reachable only
+// from their own test suites, which meant an operator could not exercise the gate policy, the
+// continuity predicates or the regression rule against their own input at all.
+//
+// A non-zero exit from the component is not necessarily a malfunction: a rejected candidate and a
+// failed compatibility check are verdicts. Their output is passed through and the exit code
+// preserved so the caller can tell a verdict from a breakage.
+func component(name string, args []string, path string) int {
+	if path == "" {
+		fmt.Fprintf(os.Stderr, "usage: b1 %s <input.json>\n", name)
+		return 2
+	}
+	if _, err := os.Stat(path); err != nil {
+		fmt.Fprintf(os.Stderr, "cannot read %s: %v\n", path, err)
+		return 2
+	}
+
+	input, err := os.Open(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "cannot open %s: %v\n", path, err)
+		return 2
+	}
+	defer input.Close()
+
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stdin = input
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		if exit, ok := err.(*exec.ExitError); ok {
+			return exit.ExitCode()
+		}
+		fmt.Fprintf(os.Stderr, "%s is not built or not runnable: %v\n", name, err)
+		return 3
+	}
+	return 0
+}
+
+func arg(args []string, i int) string {
+	if len(args) > i {
+		return args[i]
+	}
+	return ""
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		usage()
@@ -166,6 +221,26 @@ func main() {
 		code = cmdPlan(os.Args[2:])
 	case "status":
 		code = cmdStatus()
+	case "score":
+		root := repoRoot()
+		code = component("score",
+			[]string{"python3", filepath.Join(root, "engine/python/b1_quality/cli.py")},
+			arg(os.Args[2:], 0))
+	case "continuity":
+		root := repoRoot()
+		code = component("continuity",
+			[]string{"java", "-cp",
+				filepath.Join(root, "engine/jvm/kotlin/build/b1continuity.jar") + ":" +
+					filepath.Join(root, "engine/jvm/java/build"),
+				"b1.continuity.MainKt", "compatibility"},
+			arg(os.Args[2:], 0))
+	case "converge":
+		root := repoRoot()
+		code = component("converge",
+			[]string{"dotnet",
+				filepath.Join(root, "engine/csharp/B1.Convergence/bin/Release/net8.0/B1.Convergence.dll"),
+				"converge"},
+			arg(os.Args[2:], 0))
 	case "-h", "--help", "help":
 		usage()
 	default:

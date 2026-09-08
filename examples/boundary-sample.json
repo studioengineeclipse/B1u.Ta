@@ -1,0 +1,23 @@
+{
+  "note": "Terminal state of segment two and the opening state of segment three. The subject is mid-stride and the camera is tracking; the next frame stops both, which is the unexplained-stop failure the continuity engine exists to catch.",
+  "terminal": {
+    "subject_positions_mm": { "kage": 4200 },
+    "subject_velocities_mm_per_s": { "kage": 1400 },
+    "contact_states": { "kage": "right_foot_down" },
+    "carried_objects": { "kage": ["satchel"] },
+    "camera_position_mm": 4200,
+    "camera_velocity_mm_per_s": 1400,
+    "lighting_state": "strip_lights_overhead",
+    "visual_signature_distance_mu": 0
+  },
+  "next": {
+    "subject_positions_mm": { "kage": 4300 },
+    "subject_velocities_mm_per_s": { "kage": 0 },
+    "contact_states": { "kage": "right_foot_down" },
+    "carried_objects": { "kage": ["satchel"] },
+    "camera_position_mm": 4300,
+    "camera_velocity_mm_per_s": 0,
+    "lighting_state": "strip_lights_overhead",
+    "visual_signature_distance_mu": 40
+  }
+}

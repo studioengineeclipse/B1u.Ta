@@ -379,6 +379,12 @@ func Run(repo, irPath, outDir string) (*Result, error) {
 				Set("kind", canon.String("reference_roles")).
 				Set("detail", canon.String(refDetail)),
 		}).
+		Set("proof", canon.Null{}).
+		Set("recovery_state", canon.NewObject().
+			Set("available", canon.Bool(true)).
+			Set("method", canon.String("delete the emitted package; the IR reproduces it exactly")).
+			Set("known_data_loss", canon.Array{}).
+			Set("unknown_data_loss", canon.Bool(false))).
 		Set("present_validity", canon.String("WORKING_ASSUMPTION")).
 		Set("observed_at_ms", canon.Int(nowMs))
 

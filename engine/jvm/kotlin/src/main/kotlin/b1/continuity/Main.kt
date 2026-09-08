@@ -36,6 +36,11 @@ fun main(args: Array<String>) {
                     ?: throw Canon.B1Exception("B1_ERR_PARSE", "missing `next`")
                 val result = checkCompatibility(jsonToBoundary(terminal), jsonToBoundary(next))
                 println(Canon.canonicalize(compatibilityToJson(result)))
+                // 4 = a negative verdict, matching the authority gate and the quality engine. An
+                // incompatible boundary is the engine working, not failing, so it must be
+                // distinguishable from a crash — and uniform across components, or nothing can
+                // branch on a verdict without knowing which component produced it.
+                if (!result.compatible) kotlin.system.exitProcess(4)
             } catch (e: Canon.B1Exception) {
                 System.err.println(e.token)
                 kotlin.system.exitProcess(2)

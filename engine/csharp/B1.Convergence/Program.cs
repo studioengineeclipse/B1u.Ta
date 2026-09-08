@@ -113,7 +113,10 @@ public static class Program
                 : new Json.Str(outcome.AttributedTo);
 
             Console.WriteLine(Canon.Canonicalize(result));
-            return 0;
+            // 4 = a negative verdict, matching the authority gate and the quality engine. A
+            // rejected candidate is the gate doing its job; conflating it with a malfunction would
+            // make the two indistinguishable to any caller.
+            return outcome.Retained ? 0 : 4;
         }
         catch (B1Exception e)
         {

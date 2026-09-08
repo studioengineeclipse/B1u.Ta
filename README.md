@@ -27,7 +27,7 @@ contract is what moves it to Route A–D; see `SPEC/70-provider-routes.md`.
 | Path | Contents |
 |---|---|
 | `SPEC/` | Normative documents. Everything else implements these. |
-| `contracts/` | TypeScript contract — the canonical IR and record types; generates the JSON Schema every other language consumes |
+| `contracts/` | TypeScript contract — the canonical IR and record types; generates the JSON Schema that Rust enforces at the ledger boundary |
 | `core/c` | `libb1sig` — normative SHA-256, B1-CANON-1 canonicalizer, frame visual signature |
 | `core/cpp` | Media/temporal analyzer |
 | `core/rust` | Causal ledger, authority gate, P/E anomaly detector |
@@ -76,7 +76,15 @@ b1 discover                                   # capability map and selected rout
 b1 plan examples/shot-02-continuation.json    # -> a package, and one ledger record
 b1ledger verify                               # walk the chain, recomputing every digest and link
 b1ledger show                                 # one line per record
+
+b1ledger validate contracts/generated/b1-video-ir.schema.json < examples/shot-02-continuation.json
+b1 score examples/quality-vector-sample.json      # hard gates + failure localization
+b1 continuity examples/boundary-sample.json       # causal compatibility across a boundary
+b1 converge examples/convergence-sample.json      # candidate vs the previous verified best
 ```
+
+Those three exit `4` on a negative verdict — a rejected candidate or an incompatible boundary is the
+component working, not failing, and a caller has to be able to tell the two apart.
 
 A planning run checks reference roles before it compiles, asks the authority gate whether a
 provider call is authorized, and appends a sealed record. Under Route E the gate closes, and its
@@ -90,6 +98,18 @@ calling the local `json.dumps` and getting lucky.
 Expected digests are **blessed by agreement**: a value is only written to `conformance/expected.json`
 when at least two independent implementations produce it. One implementation cannot certify its own
 output.
+
+## The contract is enforced, not just published
+
+`contracts/` generates JSON Schema; `core/rust` reads it at runtime and enforces it where records
+enter the chain. Validity therefore has one definition rather than one per component — which
+matters, because it previously had two that disagreed: the schema declared 27 required fields and
+the append path checked 9, and the 18-field gap included the three whose separate presence law L3
+depends on.
+
+B1-SCHEMA-1 (`SPEC/25`) inverts two JSON Schema defaults on purpose. An unrecognized keyword is an
+error rather than ignored, and an unsupported pattern is an error rather than skipped — because a
+validator that quietly passes over what it cannot check reports a result it never established.
 
 ## Participation status is derived, never claimed
 

@@ -52,7 +52,11 @@ export const ELEMENT = namedEntity({
 
 export const REFERENCE_BINDING = s.obj({
   reference_id: s.str({ pattern: "^[a-z0-9_-]{1,64}$" }),
-  media_digest: s.digestRef("Digest of the referenced media bytes"),
+  // Nullable: a scene can be authored before its reference media exists, and a binding with no
+  // bytes yet is a normal intermediate state. What is *not* legitimate is generating from one —
+  // an unbound reference cannot be sent to a provider — so the constraint belongs at the
+  // execution boundary, not at authoring.
+  media_digest: s.nullable(s.digestRef("Digest of the referenced media bytes; null until bound")),
   role: REFERENCE_ROLE,
   role_detail: s.opt(s.str({ note: "Required when role is OTHER_EXPLICIT_ROLE" })),
   weight_ppm: s.ppm(),

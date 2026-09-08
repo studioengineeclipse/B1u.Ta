@@ -652,9 +652,16 @@
             "pattern": "^[a-z0-9_-]{1,64}$"
           },
           "media_digest": {
-            "type": "string",
-            "pattern": "^b1c1:[0-9a-f]{64}$",
-            "description": "Digest of the referenced media bytes"
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^b1c1:[0-9a-f]{64}$",
+                "description": "Digest of the referenced media bytes; null until bound"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "role": {
             "enum": [

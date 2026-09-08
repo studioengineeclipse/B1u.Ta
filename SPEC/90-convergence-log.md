@@ -74,3 +74,63 @@ What it explicitly does not cover:
 
 The next pass cannot begin until a provider is authorized and its contract verified. Convergence
 here is convergence of the orchestration fabric, not of the system's purpose.
+
+---
+
+## Pass 02 — contract enforcement
+
+Baseline: `8986940` (pass 01's verified best). Candidate: this pass.
+
+Pass 01 returned `CONVERGED_FOR_CURRENT_OBJECTIVE_AND_EVIDENCE`, and that claim was bounded to
+*its* objective and evidence. Pass 02 audited dimensions pass 01 had not — schema consumption,
+adversarial input at the append boundary, and whether asserted claims had actually been tested —
+and found a defect pass 01's own change had introduced.
+
+### Defects found and resolved
+
+| # | Found by | Defect | Resolution |
+|---|---|---|---|
+| 11 | Adversarial input at the append boundary | **A record could claim VERIFIED with nothing behind it.** `seal_and_append`, added in pass 01, checked 9 fields by a hand-written list. A record with `receipt`, `observed_effect` and `objective_postcondition` entirely absent was accepted, sealed, chained, and verified as intact. Law L3's mechanism is that those three are *separately present*; absent, the mechanism is gone. Every pass-01 test used the typed `Record` path, which cannot produce this. | The generated schema is now enforced at the boundary; all 27 required fields are checked. The exact document is refused, naming all 15 absences. |
+| 12 | Grepping for consumers | **Nine generated schemas, zero consumers.** The contract was published and enforced by nobody, so each component carried its own idea of validity — and two had already drifted 18 fields apart. | `SPEC/25-b1-schema-1.md` + `core/rust/src/schema.rs`; the schema is read at runtime, so validity has one definition. |
+| 13 | Writing the negative test for defect 12 | **The unknown-keyword rule was weaker than claimed.** Schema defects were detected only while walking the *document*, so an unknown keyword on a field nothing populates was never reached — the validator would keep reporting valid over a constraint it never checked, which is the exact silent weakening the rule exists to prevent. | `scan_schema` walks the whole schema independently of the document. A defect in the contract is a property of the contract. |
+| 14 | Enforcement, immediately | **`recomputed_envelope_digest` was declared always-a-digest.** When the gate closes because no envelope is bound there is no digest to recompute; the contract asserted something false exactly when the gate does its most important work. | Made nullable. |
+| 15 | Enforcement, on the DSL output | **The authoring DSL emitted reference bindings with no `media_digest`,** which the contract required. | The contract was wrong, not the DSL: a scene can be authored before its media exists. Made nullable, with the constraint belonging at the execution boundary instead — an unbound reference cannot be sent to a provider. |
+| 16 | Running the new operator paths | **Verdict exit codes disagreed.** `score` returned 4 on rejection while `continuity` and `converge` returned 0, so nothing could branch on a verdict without knowing which component produced it. | Uniform: `4` = negative verdict across all three, matching the authority gate. |
+| 17 | Playwright | The dashboard's "opens from `file://` with no build step" was asserted in pass 01 and never tested. | Tested: correct title and heading, three honest empty states, zero JS errors. **No code change** — the claim was true, and is now evidence rather than assertion. |
+
+### Changes rejected
+
+| Change considered | Why rejected |
+|---|---|
+| Enforce all nine schemas at every boundary the loop crosses | Out of scope for this pass by explicit decision. Each additional validation point is a place a legitimate document can be wrongly refused and needs its own tests; the ledger boundary is where the actual hole was. The other eight remain generated-and-unenforced, recorded as such in `SPEC/25 §6` rather than left to be discovered. |
+| Have `seal_and_append` fall back to the old field list when the schema is missing | A fallback to a weaker check is how enforcement quietly stops. `SchemaUnavailable` refuses the append instead. |
+| Let `b1 score` default `measurement_basis` to MEASURED | Would turn the operator path into a way to manufacture a quality verdict from typed-in numbers. The field is required, and verdicts on declared input are marked ineligible to become a verified best. |
+| Generate a Rust required-field list from the schema at build time | Two artifacts that can drift, which is the problem being fixed. Reading the schema at runtime keeps one definition. |
+
+### Regression check
+
+- **Improved:** epistemic integrity (a record can no longer assert VERIFIED with nothing behind
+  it), verification strength (7 new Rust tests; 26 total), interface integrity (the generated
+  contract is now load-bearing), output completeness (three components reachable by an operator).
+- **Regressed:** none measured. 364 conformance checks and 9 component suites unchanged and green.
+- **Attribution:** defects 11–16 individually, each with a test that fails without its fix.
+- **Verdict:** RETAIN.
+
+### Stop reason
+
+A complete pass found no further material defect the existing apparatus could demonstrate. Not cut
+short by a token, time, tool or access limit.
+
+### Status
+
+`CONVERGED_FOR_CURRENT_OBJECTIVE_AND_EVIDENCE`
+
+Same bound as pass 01, and one observation worth recording: pass 01 converged and was still wrong.
+Its convergence claim was honest — no further improvement was demonstrable *by the apparatus it
+had*. Defect 11 was invisible because no test constructed a malformed record, and defect 12 because
+nothing asked whether the contract was read. Convergence is a statement about what the current
+verification can demonstrate, never about what is true.
+
+What remains open is unchanged and unchangeable from here: **no provider contract has ever been
+observed.** Eight of nine schemas are enforced nowhere. The generation half of the loop has never
+run.

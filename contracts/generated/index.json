@@ -1,8 +1,8 @@
 {
   "contract_version": "b1-contracts/1",
   "schemas": {
-    "b1-video-ir": "ce0f3f69f8554c5c238e0809815e565cfdba73568f81ae8ebfcc7715971c5eba",
-    "ledger-record": "090d7aa8c21c4a9b7fa245ee6425bb250a005acab7970423432f741d356a0b90",
+    "b1-video-ir": "b765acc9344a50d985b881598ef9e824f5e68de96f290e21c9af8125d7701664",
+    "ledger-record": "e3410af42959a417f751f4e2e527e9d0e9862771631b73e23b784fbd298cb82c",
     "authority-envelope": "52aa5b5e82e53d77f55278dc78280f139c9477a2dcb0ee942efb82129a010033",
     "provider-capability": "b84ff32f8aa0c302ae63ce38d2c67bb957e749a56dfbb090d3fb4c9b9c33f05d",
     "evidence-record": "cc0b1ea64653a037ccf64daae1390955f4d2ba7901581d311d76a25a1d9be007",

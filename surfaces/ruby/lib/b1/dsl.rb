@@ -238,7 +238,8 @@ module B1
 
     # `because:` is required. A reference exists to serve an identified requirement; one attached
     # without a reason is the failure mode SPEC/10 §5 is written against.
-    def reference(id, role:, weight_ppm:, applies_to:, because:, origin: 'M', detail: nil)
+    def reference(id, role:, weight_ppm:, applies_to:, because:, origin: 'M', detail: nil,
+                  digest: nil)
       role = role.to_s.upcase
       raise DSLError, "unknown reference role #{role.inspect}" unless ROLES.include?(role)
       raise DSLError, "reference #{id} must state what requirement it serves" if because.to_s.strip.empty?
@@ -246,7 +247,10 @@ module B1
 
       entry = {
         'reference_id' => id.to_s, 'role' => role, 'weight_ppm' => weight_ppm,
-        'applies_to' => Array(applies_to).map(&:to_s), 'rationale' => because, 'origin' => origin
+        'applies_to' => Array(applies_to).map(&:to_s), 'rationale' => because, 'origin' => origin,
+        # Present and null rather than absent: the contract distinguishes "not yet bound to bytes"
+        # from "this field was never considered".
+        'media_digest' => digest
       }
       entry['role_detail'] = detail if detail
       @ir['reference_bindings'] << entry

@@ -8,10 +8,12 @@
 pub mod authority;
 pub mod canon;
 pub mod ledger;
+pub mod schema;
 pub mod sha256;
 
 pub use authority::{check_at_effect_time, Envelope, GateDecision, GateState, Policy, ProposedEffect};
 pub use canon::{b1c1, canonicalize, digest_text, digest_value, parse, B1Error, Json};
+pub use schema::{validate as validate_contract, Violation};
 pub use ledger::{
     Action, ChainError, EffectClass, Ledger, ObservedEffect, Origin, Outcome, Postcondition,
     Receipt, Record, Validity,

@@ -239,6 +239,16 @@ fn body(summary: &str) -> Json {
         ("receipt", Json::Null),
         ("observed_effect", Json::Null),
         ("objective_postcondition", Json::Null),
+        ("authorization_ref", Json::Null),
+        ("envelope_digest", Json::Null),
+        ("effect_time_validation", Json::Null),
+        ("persistent_id", Json::Null),
+        ("user_visible", Json::Bool(true)),
+        ("reason_persisted", Json::Null),
+        ("effect_class", Json::s("REVERSIBLE")),
+        ("evidence", Json::Arr(vec![])),
+        ("proof", Json::Null),
+        ("recovery_state", Json::Null),
         ("present_validity", Json::s("WORKING_ASSUMPTION")),
         ("observed_at_ms", Json::Int(1_700_000_000_000)),
     ])
@@ -312,9 +322,15 @@ fn seal_and_append_refuses_an_incomplete_body() {
     members.remove("attempt_identity");
 
     match ledger.seal_and_append(&Json::Obj(members)) {
-        Err(b1_ledger::ledger::SealError::MissingFields(fields)) => {
-            assert!(fields.contains(&"executor".to_string()));
-            assert!(fields.contains(&"attempt_identity".to_string()));
+        Err(b1_ledger::ledger::SealError::ContractViolation(violations)) => {
+            for field in ["executor", "attempt_identity"] {
+                assert!(
+                    violations.iter().any(|v| matches!(
+                        v, Violation::MissingRequired { field: f, .. } if f == field
+                    )),
+                    "`{field}` must be named in the refusal"
+                );
+            }
         }
         other => panic!("an incomplete body must be refused, got {other:?}"),
     }
@@ -336,6 +352,155 @@ fn a_sealed_record_still_classifies_as_not_executed() {
     for f in ["receipt", "observed_effect", "objective_postcondition"] {
         assert!(matches!(rec.get(f), Some(Json::Null)), "{f} should be null");
     }
+}
+
+// --- B1-SCHEMA-1: the contract is enforced, not merely published ---------------
+
+use b1_ledger::schema::{self, Violation};
+
+fn schema_of(json: &str) -> Json {
+    b1_ledger::canon::parse(json).unwrap()
+}
+
+#[test]
+fn required_means_present_not_merely_non_null() {
+    // The distinction the whole enforcement rests on: a required, nullable field must appear
+    // carrying null. Omitting it is a violation, because "not recorded" and "recorded as nothing"
+    // are different claims.
+    let s = schema_of(
+        r#"{"type":"object","properties":{"a":{"anyOf":[{"type":"string"},{"type":"null"}]}},
+            "required":["a"],"additionalProperties":false}"#,
+    );
+
+    assert!(schema::validate(&schema_of(r#"{"a":null}"#), &s).is_empty());
+    assert!(schema::validate(&schema_of(r#"{"a":"x"}"#), &s).is_empty());
+
+    let violations = schema::validate(&schema_of("{}"), &s);
+    assert!(
+        matches!(violations.as_slice(), [Violation::MissingRequired { field, .. }] if field == "a"),
+        "omitting a required nullable field must be a violation, got {violations:?}"
+    );
+}
+
+#[test]
+fn an_unknown_keyword_is_refused_even_where_the_document_never_reaches_it() {
+    // Detecting schema defects only while walking the document would make enforcement depend on
+    // what the document happens to contain — an unknown keyword on a field nothing populates would
+    // never be reached, and the validator would keep reporting valid over an unchecked constraint.
+    let s = schema_of(
+        r#"{"type":"object","properties":{"never_present":{"type":"string","minLength":3}},
+            "additionalProperties":false}"#,
+    );
+
+    let violations = schema::validate(&schema_of("{}"), &s);
+    assert!(
+        violations.iter().any(|v| matches!(v, Violation::UnknownKeyword { keyword, .. } if keyword == "minLength")),
+        "an unknown keyword must be found by scanning the schema, got {violations:?}"
+    );
+}
+
+#[test]
+fn an_unsupported_pattern_is_refused_rather_than_skipped() {
+    let s = schema_of(
+        r#"{"type":"object","properties":{"a":{"type":"string","pattern":"^(foo|bar)+$"}},
+            "additionalProperties":false}"#,
+    );
+    let violations = schema::validate(&schema_of(r#"{"a":"foo"}"#), &s);
+    assert!(
+        violations.iter().any(|v| matches!(v, Violation::UnsupportedPattern { .. })),
+        "skipping a pattern it cannot evaluate would report a result never established"
+    );
+}
+
+#[test]
+fn supported_patterns_both_match_and_reject() {
+    let s = schema_of(
+        r#"{"type":"object","properties":{"d":{"type":"string","pattern":"^b1c1:[0-9a-f]{64}$"}},
+            "additionalProperties":false}"#,
+    );
+    let good = format!(r#"{{"d":"b1c1:{}"}}"#, "a".repeat(64));
+    assert!(schema::validate(&schema_of(&good), &s).is_empty());
+
+    let short = format!(r#"{{"d":"b1c1:{}"}}"#, "a".repeat(63));
+    assert!(!schema::validate(&schema_of(&short), &s).is_empty(), "length is checked");
+
+    let nonhex = format!(r#"{{"d":"b1c1:{}"}}"#, "z".repeat(64));
+    assert!(!schema::validate(&schema_of(&nonhex), &s).is_empty(), "character class is checked");
+}
+
+#[test]
+fn every_violation_is_reported_not_only_the_first() {
+    // Three missing fields and thirty are different situations; reporting them identically discards
+    // the signal that tells them apart.
+    let s = schema_of(
+        r#"{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"string"},
+            "c":{"type":"string"}},"required":["a","b","c"],"additionalProperties":false}"#,
+    );
+    assert_eq!(schema::validate(&schema_of("{}"), &s).len(), 3);
+}
+
+#[test]
+fn the_generated_contracts_are_all_fully_enforceable() {
+    // Every shipped schema must lie inside B1-SCHEMA-1. If one drifts outside, enforcement against
+    // it silently becomes partial, so this fails rather than letting that happen quietly.
+    for name in [
+        "ledger-record.schema.json",
+        "b1-video-ir.schema.json",
+        "authority-envelope.schema.json",
+        "generation-package.schema.json",
+        "quality-vector.schema.json",
+        "continuity-state.schema.json",
+        "provider-capability.schema.json",
+        "evidence-record.schema.json",
+        "failure-localization.schema.json",
+    ] {
+        let Some(path) = schema::find_generated(name) else {
+            panic!("{name} not found — run `npm run generate` in contracts/");
+        };
+        let s = schema::load(&path).unwrap();
+        let defects: Vec<_> = schema::validate(&schema_of("{}"), &s)
+            .into_iter()
+            .filter(Violation::is_schema_defect)
+            .collect();
+        assert!(defects.is_empty(), "{name} is not fully enforceable: {defects:?}");
+    }
+}
+
+/// The exact document that pass 01 accepted, sealed and chained. It must now be refused.
+#[test]
+fn a_record_cannot_claim_verified_with_nothing_behind_it() {
+    let path = temp_path("l3-hole");
+    let _ = std::fs::remove_file(&path);
+    let ledger = Ledger::new(&path);
+
+    let thin = schema_of(
+        r#"{"goal":"g","derived_need":"d","origin":"M","authority":"a","executor":"e",
+            "execution_identity":"ei","attempt_identity":"ai",
+            "action":{"kind":"k","summary":"s","target":"t","persistent":false},
+            "present_validity":"VERIFIED"}"#,
+    );
+
+    match ledger.seal_and_append(&thin) {
+        Err(b1_ledger::ledger::SealError::ContractViolation(violations)) => {
+            // The three fields law L3 depends on must be among the refusals; without them present
+            // a record asserts VERIFIED and nothing can contradict it.
+            for field in ["receipt", "observed_effect", "objective_postcondition"] {
+                assert!(
+                    violations.iter().any(|v| matches!(
+                        v, Violation::MissingRequired { field: f, .. } if f == field
+                    )),
+                    "`{field}` must be refused as absent"
+                );
+            }
+        }
+        other => panic!("the thin record must be refused, got {other:?}"),
+    }
+
+    assert_eq!(
+        ledger.read_lines().unwrap().len(),
+        0,
+        "a refused record must not reach the chain"
+    );
 }
 
 // --- S3: the authority gate ---------------------------------------------------

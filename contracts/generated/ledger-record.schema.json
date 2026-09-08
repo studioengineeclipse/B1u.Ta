@@ -83,8 +83,15 @@
               ]
             },
             "recomputed_envelope_digest": {
-              "type": "string",
-              "pattern": "^b1c1:[0-9a-f]{64}$"
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^b1c1:[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "matched": {
               "type": "boolean"

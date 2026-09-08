@@ -49,7 +49,10 @@ export type AuthorityEnvelope = Infer<typeof AUTHORITY_ENVELOPE>;
 export const EFFECT_TIME_VALIDATION = s.obj({
   checked_at_ms: s.int("ms"),
   gate_state: GATE_STATE,
-  recomputed_envelope_digest: s.digestRef(),
+  // Nullable: when the gate closes because no envelope is bound, there is no envelope to
+  // recompute a digest from. Declaring it always-a-digest asserted something that is false
+  // exactly when the gate does its most important work — caught by contract enforcement.
+  recomputed_envelope_digest: s.nullable(s.digestRef()),
   matched: s.bool(),
   detail: s.opt(s.str()),
 });

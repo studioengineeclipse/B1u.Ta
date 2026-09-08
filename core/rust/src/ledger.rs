@@ -390,7 +390,12 @@ pub enum SealError {
     NotAnObject,
     /// The body claimed a field the chain assigns.
     ReservedField(&'static str),
-    MissingFields(Vec<String>),
+    /// The body does not satisfy the generated contract.
+    ContractViolation(Vec<crate::schema::Violation>),
+    /// The generated contract could not be located. Refusing rather than falling back to a weaker
+    /// check: an unenforced append is exactly the state this validation exists to end.
+    SchemaUnavailable,
+    SchemaInvalid(String),
     Canon(B1Error),
     Io(std::io::Error),
 }
@@ -404,9 +409,23 @@ impl fmt::Display for SealError {
                 "the body sets `{name}`, which the chain assigns; a caller that picks its own \
                  position in history is not recording, it is forging"
             ),
-            SealError::MissingFields(fields) => {
-                write!(f, "the body is missing required field(s): {}", fields.join(", "))
+            SealError::ContractViolation(violations) => {
+                writeln!(
+                    f,
+                    "the body does not satisfy ledger-record.schema.json ({} violation(s)):",
+                    violations.len()
+                )?;
+                for v in violations {
+                    writeln!(f, "  [{}] {v}", v.token())?;
+                }
+                Ok(())
             }
+            SealError::SchemaUnavailable => write!(
+                f,
+                "contracts/generated/ledger-record.schema.json was not found; refusing to append \
+                 rather than falling back to a weaker check"
+            ),
+            SealError::SchemaInvalid(detail) => write!(f, "{detail}"),
             SealError::Canon(e) => write!(f, "body is not canonicalizable: {}", e.token()),
             SealError::Io(e) => write!(f, "{e}"),
         }
@@ -490,18 +509,28 @@ impl Ledger {
             }
         }
 
-        const REQUIRED: [&str; 9] = [
-            "goal", "derived_need", "origin", "authority", "executor", "execution_identity",
-            "attempt_identity", "action", "present_validity",
-        ];
-        let missing: Vec<&str> = REQUIRED
-            .into_iter()
-            .filter(|f| !members.contains_key(*f))
-            .collect();
-        if !missing.is_empty() {
-            return Err(SealError::MissingFields(
-                missing.iter().map(|s| s.to_string()).collect(),
-            ));
+        // Validity has one definition — the generated contract — not a list maintained here.
+        //
+        // The hand-written list this replaces checked 9 fields where the schema declares 27, and
+        // the 18 it missed included receipt, observed_effect and objective_postcondition. A record
+        // could therefore assert VERIFIED with all three absent and still seal, chain and verify.
+        // Law L3 depends on those fields being separately *present*; a second, thinner definition
+        // of validity living here is what let that hole open.
+        //
+        // seq, prev_link and record_id are added after validation because the schema requires them
+        // and the chain has not assigned them yet.
+        let mut candidate = members.clone();
+        candidate.insert("seq".into(), Json::Int(0));
+        candidate.insert("prev_link".into(), Json::s(ZERO_LINK));
+        candidate.insert("record_id".into(), Json::s(ZERO_LINK));
+
+        let schema_path = crate::schema::find_generated("ledger-record.schema.json")
+            .ok_or(SealError::SchemaUnavailable)?;
+        let schema = crate::schema::load(&schema_path).map_err(SealError::SchemaInvalid)?;
+
+        let violations = crate::schema::validate(&Json::Obj(candidate), &schema);
+        if !violations.is_empty() {
+            return Err(SealError::ContractViolation(violations));
         }
 
         let seq = self.next_seq().map_err(SealError::Io)?;

@@ -1,0 +1,20 @@
+{
+  "note": "A candidate that gains on three dimensions and loses on correctness. Its mean improves; the gate rejects it, because averaging away a material regression is the failure the regression gate exists to prevent.",
+  "attributed_to": "replaced the tonal metric with 1-D Earth Mover's Distance",
+  "baseline": {
+    "correctness": 800, "objective_alignment": 700, "clarity": 600, "determinism": 700,
+    "authority_separation": 800, "epistemic_integrity": 800, "verification_strength": 600,
+    "causal_traceability": 700, "recovery_capability": 600, "maintainability": 600,
+    "dependency_integrity": 700, "polyglot_integrity": 700, "interface_integrity": 700,
+    "output_completeness": 700, "unnecessary_complexity": 400, "working_behavior": 800,
+    "resource_cost": 500, "execution_feasibility": 700
+  },
+  "candidate": {
+    "correctness": 400, "objective_alignment": 700, "clarity": 900, "determinism": 900,
+    "authority_separation": 800, "epistemic_integrity": 800, "verification_strength": 600,
+    "causal_traceability": 700, "recovery_capability": 600, "maintainability": 900,
+    "dependency_integrity": 700, "polyglot_integrity": 700, "interface_integrity": 700,
+    "output_completeness": 700, "unnecessary_complexity": 400, "working_behavior": 800,
+    "resource_cost": 500, "execution_feasibility": 700
+  }
+}
