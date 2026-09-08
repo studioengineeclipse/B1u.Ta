@@ -4,6 +4,12 @@ version = "1.0.0"
 edition = "2021"
 description = "Hash-chained causal ledger, authority/persistence gate, and P/E anomaly detector."
 
+# Serializing ledger appends needs `File::try_lock`, stable since 1.89. Stated here so an older
+# toolchain fails with the reason rather than an unresolved-method error — and so the alternative is
+# on the record: taking the lock through a crate would have put a dependency in the one component
+# whose supply chain is deliberately just the standard library.
+rust-version = "1.89"
+
 # No dependencies, deliberately. This is the trusted core: the component that decides whether a
 # persistent effect may occur and whether history has been tampered with. Its supply chain is
 # exactly the Rust standard library, and the whole repository builds offline. SHA-256 and the

@@ -112,6 +112,16 @@ namespace :conform do
     end
   end
 
+  # `conform` asks whether the fourteen agree on these documents. `coverage` asks the question about
+  # the corpus itself: is there a document for every form and every rejection class the profile
+  # defines? Two CRITICAL defects survived 364 green checks because whole categories were absent —
+  # the JSON literals, and bytes that are not valid UTF-8 — and no amount of agreement on the
+  # documents that *were* present could have revealed it.
+  desc 'Check the corpus covers every value form and error class the profile defines'
+  task :coverage do
+    sh 'python3 tools/coverage.py'
+  end
+
   desc 'Write expected.json from cross-implementation agreement'
   task :bless do
     expected, unresolved = B1::Conformance.bless
@@ -133,8 +143,17 @@ task :probe do
   sh 'python3 tools/probe.py'
 end
 
+# Deliberately not part of `verify`. It is slow, and its result depends on the seed — so including
+# it would make a green `verify` mean something different from run to run. It is the exploratory
+# half: `conform` checks the documents we wrote down, `conform:coverage` checks the categories we
+# named, and this looks for the ones we did not. It found four defects that the first two could not.
+desc 'Fuzz the fourteen canon implementations against each other: rake fuzz[seed,count]'
+task :fuzz, %i[seed count] do |_t, args|
+  sh "python3 tools/difffuzz.py #{args[:seed] || 20_260_908} #{args[:count] || 150}"
+end
+
 desc 'Build, conform, probe'
-task verify: %i[build test conform probe]
+task verify: %i[build test conform] + ['conform:coverage'] + %i[probe]
 
 desc 'Generate the executive handoff from repository state'
 task :report do

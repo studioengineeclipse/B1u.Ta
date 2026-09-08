@@ -116,6 +116,52 @@ discardable without losing history), and readable by all fourteen languages with
 Each line is the record's B1-CANON-1 form, so the file's bytes are reproducible from the records
 and a digest recomputation is a byte comparison.
 
+### 4a. Appends are serialized
+
+Reading the chain's tail and extending it is **one** operation. An appender **MUST** hold an
+exclusive lock on the ledger across `next_seq` → `tail_link` → write, and **MUST** write a record in
+a single call rather than emitting the line and its terminator separately.
+
+Without this, two appenders read the same tail and both extend it. Measured, before the lock, with
+24 concurrent `b1ledger append` processes — reproduced every time:
+
+```
+chain verification: CHAIN VERIFICATION FAILED: sequence gap: expected seq 1, found 0
+  DUPLICATED: {0: 2, 2: 2, 7: 2, 9: 2, 12: 2, 15: 2, 18: 2, 20: 2}
+  MISSING:    [1, 3, 8, 10, 13, 19, 21, 23]
+```
+
+`b1 plan` appends on every run, so two operators planning at once was enough to produce it.
+
+What makes this a property of the chain rather than an implementation detail: **`verify` cannot tell
+this damage from tampering.** A duplicated sequence number and a broken link are exactly what a
+splice looks like. A tamper-evident log that manufactures its own alarms during ordinary use is
+worse than one with no alarm, because it teaches its operator that the alarm means nothing — and it
+does so precisely when the log is busiest, which is when tampering would be easiest to hide.
+
+An appender that cannot take the lock within a bounded wait **MUST refuse**, and the caller **MUST**
+be told the record was not written. Appending unserialized would assign a sequence number another
+writer is already using; a refusal is a fact the caller can act on, and corruption is not.
+
+The lock is advisory. It serializes every writer that takes it — every writer in this system — and
+does not defend against a process that writes to the file directly. That is the honest boundary, and
+it is the same one §3 already draws: the ledger offers evidence of damage, never prevention of it.
+
+### 4b. An absent ledger is not an intact ledger
+
+Verification distinguishes three states, and **MUST NOT** collapse the first two:
+
+| State | Meaning | Verdict |
+|---|---|---|
+| The file does not exist | Nothing was checked | **Not** intact; a non-zero exit |
+| The file exists and is empty | A correctly initialized ledger | Intact, 0 records |
+| The file has records | The chain was walked | Intact, or the failure |
+
+Treating a missing file as empty is right where the first append must create it, and catastrophic in
+verification: `b1ledger verify` reported `chain intact: 0 record(s) verified` and exited 0 for a path
+that did not exist, so a monitor pointed at a deleted ledger — or at a typo — was told the chain was
+fine. Absence of evidence rendered as evidence of integrity is law L8 in its most compact form.
+
 ## 5. Outcome classification
 
 ```

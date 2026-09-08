@@ -2,6 +2,36 @@ package b1.continuity
 
 import b1.compiler.Canon
 import b1.compiler.Canon.JObj
+import java.nio.ByteBuffer
+import java.nio.charset.CharacterCodingException
+import java.nio.charset.CodingErrorAction
+import java.nio.charset.StandardCharsets
+
+/**
+ * Reads stdin as UTF-8, refusing malformed bytes rather than replacing them.
+ *
+ * `readBytes().toString(Charsets.UTF_8)` substitutes U+FFFD for every malformed byte, so the invalid
+ * input vanished before any check could see it: `{"a":"\xff"}` and `{"a":"\xfe"}` — two different
+ * documents — were both accepted here and given the same digest, while eleven implementations
+ * rejected both.
+ *
+ * `Conform.java`, which this file calls into over IF-4, has always decoded strictly. The boundary
+ * was the leak: reaching a correct implementation through a lossy entrypoint gives a wrong answer
+ * just as surely as a wrong implementation does.
+ */
+private fun readStdinStrictUtf8(): String {
+    val raw = System.`in`.readBytes()
+    return try {
+        StandardCharsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)
+            .decode(ByteBuffer.wrap(raw))
+            .toString()
+    } catch (e: CharacterCodingException) {
+        System.err.println("B1_ERR_INVALID_UTF8")
+        kotlin.system.exitProcess(2)
+    }
+}
 
 /**
  * Kotlin entrypoint.
@@ -16,7 +46,7 @@ import b1.compiler.Canon.JObj
 fun main(args: Array<String>) {
     when (args.firstOrNull() ?: "conform") {
         "conform" -> {
-            val text = System.`in`.readBytes().toString(Charsets.UTF_8)
+            val text = readStdinStrictUtf8()
             try {
                 println(Canon.digestText(text))
             } catch (e: Canon.B1Exception) {
@@ -26,7 +56,7 @@ fun main(args: Array<String>) {
         }
 
         "compatibility" -> {
-            val text = System.`in`.readBytes().toString(Charsets.UTF_8)
+            val text = readStdinStrictUtf8()
             try {
                 val root = Canon.parse(text) as? JObj
                     ?: throw Canon.B1Exception("B1_ERR_PARSE", "expected an object")

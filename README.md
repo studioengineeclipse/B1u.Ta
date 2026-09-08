@@ -62,11 +62,12 @@ one. Two design decisions make that achievable rather than aspirational:
 ## Verifying
 
 ```sh
-rake build      # build every language that has a build step
-rake test       # every component's own suite
-rake conform    # every language against every fixture; fails on any divergence
-rake probe      # derive the participation status table from what actually runs
-rake verify     # all four
+rake build            # build every language that has a build step
+rake test             # every component's own suite
+rake conform          # every language against every fixture; fails on any divergence
+rake conform:coverage # does the corpus cover every form and every error class?
+rake probe            # derive the participation status table from what actually runs
+rake verify           # all five
 ```
 
 And to run the loop and inspect what it recorded:
@@ -98,6 +99,15 @@ calling the local `json.dumps` and getting lucky.
 Expected digests are **blessed by agreement**: a value is only written to `conformance/expected.json`
 when at least two independent implementations produce it. One implementation cannot certify its own
 output.
+
+That is still only agreement about the documents in the corpus. Three implementations were wrong
+about ordinary documents for two passes — Ruby digested `{"a":true}` and `{"a":9}` alike, three
+languages accepted invalid UTF-8, Swift rejected anything with Windows line endings — and 364 green
+checks could not have found any of it, because no fixture contained a literal, a malformed byte or a
+CR. So the corpus has a declared coverage criterion of its own: `conformance/coverage.json` names
+every value form and every error class that must have a fixture, and `rake conform:coverage` fails
+when one does not. It cannot decide what is worth covering; it can only stop a named category from
+going missing quietly.
 
 ## The contract is enforced, not just published
 

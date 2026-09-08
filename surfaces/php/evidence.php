@@ -35,11 +35,29 @@ const TRANSFERABILITY = [
 ];
 
 /**
+ * The stores that exist. A request naming anything else is refused.
+ *
+ * `$store` used to be concatenated into a filesystem path straight from the query string, so
+ * `?store=../state` served `state/ledger.jsonl` — the causal ledger — through a page built to
+ * display an empty evidence library. Any `*.jsonl` the process could reach was readable.
+ *
+ * An allowlist rather than sanitisation: stripping `..` invites the next encoding that gets past
+ * the strip, and there are exactly two stores. What is not named here does not exist.
+ */
+const STORES = ['sora', 'provider'];
+
+/**
  * @return list<array<string, mixed>>
  */
 function load_store(string $store): array
 {
     global $B1_EVIDENCE_ROOT;
+    // Second line of defence. The request is refused at the router, so reaching here with an
+    // unnamed store is a bug in this file rather than a hostile request — and it still must not
+    // reach the filesystem.
+    if (!in_array($store, STORES, true)) {
+        throw new InvalidArgumentException("unknown store: $store");
+    }
     $dir = $B1_EVIDENCE_ROOT . '/' . $store;
     if (!is_dir($dir)) {
         return [];
@@ -121,7 +139,7 @@ function applicable_to(array $record, ?string $targetProvider): array
 /** @return list<array<string, mixed>> */
 function all_records(?string $targetProvider, ?string $store): array
 {
-    $stores = $store !== null ? [$store] : ['sora', 'provider'];
+    $stores = $store !== null ? [$store] : STORES;
     $out = [];
     foreach ($stores as $s) {
         foreach (load_store($s) as $rec) {
@@ -147,6 +165,17 @@ function e(string $s): string
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $provider = isset($_GET['provider']) && $_GET['provider'] !== '' ? (string) $_GET['provider'] : null;
 $store = isset($_GET['store']) && $_GET['store'] !== '' ? (string) $_GET['store'] : null;
+
+// Refused loudly, not quietly emptied. A request for a store that does not exist and a store that
+// exists and is empty are different facts, and this surface's whole subject is not confusing the
+// two. `$provider` needs no such check: it is compared against record contents, never used to
+// build a path.
+if ($store !== null && !in_array($store, STORES, true)) {
+    http_response_code(400);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "unknown store " . json_encode($store) . "; known stores: " . implode(', ', STORES) . "\n";
+    exit;
+}
 
 if ($path === '/api/evidence') {
     respond_json([

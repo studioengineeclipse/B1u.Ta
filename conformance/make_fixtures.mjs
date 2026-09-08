@@ -19,6 +19,12 @@ const w = (name, text) => {
   console.log("fixture", name);
 };
 
+/** Writes raw bytes. Needed for fixtures that are deliberately not valid UTF-8 text. */
+const wb = (name, bytes) => {
+  writeFileSync(join(dir, name), Buffer.from(bytes));
+  console.log("fixture", name);
+};
+
 // --- positive ---------------------------------------------------------------
 
 w("empty-object.json", "{}");
@@ -115,6 +121,40 @@ w(
   }),
 );
 
+// The three JSON literals.
+//
+// This fixture exists because the corpus did not have one. Twenty-six fixtures and 364 green checks
+// contained no `true`, no `false` and no `null`, and Ruby's parser was returning the *offset where
+// the literal ended* instead of the literal's value — so `{"a":true}` and `{"a":9}` shared a digest
+// while `[true]` and `[ true]` did not. Every B1_VIDEO_IR and every ledger record contains booleans
+// and nulls; the corpus simply never asked.
+w("literals.json", '{"t":true,"f":false,"n":null}');
+
+// Literals at varying offsets, beside integers they could be confused with. A parser that yields a
+// position rather than a value gives itself away here twice over: the two `true`s sit at different
+// offsets, and the neighbouring integers are exactly what a position-valued literal would look like.
+w(
+  "literals-nested.json",
+  '{"a":[true,false,null,0,1],"b":{"c":true,"d":[null,[false]]},"e":true,"f":9,"g":14}',
+);
+
+// The same document under three amounts of insignificant whitespace. Canonicalization's one promise
+// is that these are indistinguishable; `expected.json` records the same digest for all three, so a
+// regression that reintroduces source-position dependence fails two fixtures against a third rather
+// than passing quietly. `tools/coverage.py` checks the equality is still declared.
+w("whitespace-tight.json", '{"a":[true,null],"b":1}');
+w("whitespace-loose.json", '{ "a" : [ true , null ] , "b" : 1 }');
+w("whitespace-lines.json", '{\n  "a": [\n    true,\n    null\n  ],\n  "b": 1\n}');
+
+// The same document with CRLF line endings — written as bytes so the CR survives.
+//
+// Swift rejected this and only Swift, because its parser indexed `[Character]`: a Swift `Character`
+// is a grapheme cluster and `"\r\n"` is *one* cluster, equal to neither `"\r"` nor `"\n"`, so
+// whitespace skipping stopped dead. Any JSON file saved on Windows was refused by one of fourteen
+// implementations. No fixture had a CR in it, so nothing asked.
+wb("whitespace-crlf.json",
+   Buffer.from('{\r\n  "a": [\r\n    true,\r\n    null\r\n  ],\r\n  "b": 1\r\n}\r\n', "utf8"));
+
 // --- negative ---------------------------------------------------------------
 
 const neg = (name, text) => w(name, text);
@@ -139,5 +179,32 @@ neg("neg-lone-high-then-char.json", '{"a":"\\ud83cx"}');
   for (let i = 0; i < 70; i++) v = `[${v}]`;
   neg("neg-depth.json", v);
 }
+
+// Malformed UTF-8 at the byte level.
+//
+// The corpus had no such fixture because every fixture was written as text, and text cannot express
+// the question. Three implementations — C#, Kotlin and TypeScript, including the one that owns the
+// contract — decoded stdin lossily, so malformed bytes became U+FFFD before any check ran:
+// `{"a":"\xff"}` and `{"a":"\xfe"}` were accepted and given the *same* digest while eleven
+// implementations rejected both. A digest that survives corruption is no longer identifying bytes.
+//
+// Each of these violates exactly one rule. A bad byte inside a member name would violate two —
+// UTF-8 validity and key syntax — and implementations legitimately differ on which they report
+// first, so such a document does not belong in a corpus that records one expected token.
+wb("neg-invalid-utf8-byte.json", [0x7b, 0x22, 0x61, 0x22, 0x3a, 0x22, 0xff, 0x22, 0x7d, 0x0a]);
+
+// A 4-byte sequence with its last byte missing: valid as far as it goes, then not.
+wb("neg-truncated-utf8.json",
+   [0x7b, 0x22, 0x61, 0x22, 0x3a, 0x22, 0xf0, 0x9f, 0x8e, 0x22, 0x7d, 0x0a]);
+
+// Overlong encoding of "/" (0xC0 0xAF). Decodes to a valid scalar under a permissive decoder, which
+// is what makes it dangerous: two byte sequences would name one document.
+wb("neg-overlong-utf8.json",
+   [0x7b, 0x22, 0x61, 0x22, 0x3a, 0x22, 0xc0, 0xaf, 0x22, 0x7d, 0x0a]);
+
+// A surrogate code point encoded as if it were a scalar (CESU-8 style, 0xED 0xA0 0x80). UTF-8
+// forbids it; the escaped form of the same thing is already covered by neg-lone-high-surrogate.
+wb("neg-utf8-surrogate.json",
+   [0x7b, 0x22, 0x61, 0x22, 0x3a, 0x22, 0xed, 0xa0, 0x80, 0x22, 0x7d, 0x0a]);
 
 console.log("corpus written to", dir);

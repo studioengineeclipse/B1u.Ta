@@ -20,6 +20,11 @@ declare const console: {
   error(...args: unknown[]): void;
 };
 
+/** `fatal: true` is the whole point: the default substitutes U+FFFD and hides malformed bytes. */
+declare const TextDecoder: {
+  new (label: "utf-8", options?: { fatal?: boolean }): { decode(input: Uint8Array): string };
+};
+
 interface Buffer extends Uint8Array {}
 
 declare const Buffer: {
@@ -38,6 +43,8 @@ declare module "node:crypto" {
 declare module "node:fs" {
   /** fd 0 reads stdin to completion. */
   export function readFileSync(path: string | number, encoding: "utf8"): string;
+  /** Without an encoding the bytes come back undecoded, which is the only way to reject them. */
+  export function readFileSync(path: string | number): Buffer;
   export function writeFileSync(path: string, data: string): void;
   export function mkdirSync(path: string, opts: { recursive: boolean }): void;
   export function existsSync(path: string): boolean;

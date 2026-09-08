@@ -53,10 +53,19 @@ module B1
         @i += 1 while @i < @n && [' ', "\t", "\n", "\r"].include?(@s[@i])
       end
 
-      def literal(word)
+      # Returns `value` — not the new index.
+      #
+      # This used to end at `@i += word.length`, whose value is the updated offset, and Ruby's
+      # `||` saw an Integer as truthy, so `literal('true') || true` could never reach the `true`.
+      # The parser yielded the *position where the literal ended*, which meant `{"a":true}` and
+      # `{"a":9}` shared a digest and `[true]` and `[ true]` did not — a canonicalizer whose output
+      # depends on source whitespace has nothing left to offer. Taking the value as an argument
+      # removes the branch that made the bug expressible.
+      def literal(word, value)
         raise Error.new('B1_ERR_PARSE', "expected #{word}") unless @s[@i, word.length] == word
 
         @i += word.length
+        value
       end
 
       def value(depth)
@@ -67,9 +76,9 @@ module B1
         when '{' then object(depth)
         when '[' then array(depth)
         when '"' then string
-        when 't' then literal('true') || true
-        when 'f' then literal('false') || false
-        when 'n' then literal('null') || nil
+        when 't' then literal('true', true)
+        when 'f' then literal('false', false)
+        when 'n' then literal('null', nil)
         when '-', '0'..'9' then number
         else raise Error.new('B1_ERR_PARSE', "unexpected character #{@s[@i].inspect}")
         end

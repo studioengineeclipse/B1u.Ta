@@ -1,0 +1,46 @@
+{
+  "coverage_version": "b1-coverage/1",
+  "note": "What the corpus must contain to be a corpus rather than a collection. Checked by tools/coverage.py; see SPEC/20 §7. Two CRITICAL defects survived 364 green conformance checks because whole categories of document were absent — the three JSON literals, and byte sequences that are not valid UTF-8. Neither was an oversight anyone could see: nothing stated what the corpus was supposed to cover, so nothing could report it missing.",
+
+  "value_forms": {
+    "note": "Every form B1-CANON-1 admits must appear in at least one positive fixture. A form nobody wrote a fixture for is a form nobody has checked agreement on.",
+    "required": ["object", "array", "string", "integer", "true", "false", "null"]
+  },
+
+  "error_classes": {
+    "note": "Every token in SPEC/20 §6 must be the expected result of at least one negative fixture. A rejection class with no fixture is a rule that may not be implemented at all.",
+    "required": [
+      "B1_ERR_NONINTEGER_NUMBER",
+      "B1_ERR_KEY_SYNTAX",
+      "B1_ERR_DUPLICATE_KEY",
+      "B1_ERR_INVALID_UTF8",
+      "B1_ERR_DEPTH",
+      "B1_ERR_PARSE"
+    ]
+  },
+
+  "equivalences": [
+    {
+      "note": "Insignificant whitespace is canonicalization's one promise: these four differ only in it and must digest identically. Recorded here because expected.json stores each fixture's digest independently, so nothing else states that their equality is intentional rather than coincidence. The CRLF member is not decoration — Swift rejected exactly that document and nothing else in the corpus contained a CR.",
+      "fixtures": [
+        "whitespace-tight.json",
+        "whitespace-loose.json",
+        "whitespace-lines.json",
+        "whitespace-crlf.json"
+      ]
+    },
+    {
+      "note": "The same astral scalar written as a surrogate pair and as literal UTF-8. Not a whole-document equivalence — these two fixtures differ in other ways — so it is asserted inside unicode-escape-pair.json, whose two members must canonicalize alike. Listed for the reader; not machine-checked here.",
+      "fixtures": [],
+      "informational": true
+    }
+  ],
+
+  "single_defect_rule": {
+    "note": "A negative fixture must violate exactly ONE rule. Implementations are free to check rules in any order — SPEC/20 §6 does not specify precedence — so a document with two defects gets different tokens from different implementations while all correctly reject it. `expected.json` records one token per fixture and would be recording an arbitrary choice. This is a rule for whoever adds the next negative fixture; it cannot be checked mechanically, because deciding what a malformed document violates is the thing under test.",
+    "known_multi_defect_documents": [
+      "an invalid byte inside a member name: B1_ERR_INVALID_UTF8 and B1_ERR_KEY_SYNTAX",
+      "an invalid byte inside a 70-deep array: B1_ERR_INVALID_UTF8 and B1_ERR_DEPTH"
+    ]
+  }
+}

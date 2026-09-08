@@ -86,6 +86,31 @@ No space, tab, or newline between any tokens. `{"a":1,"b":[2,3]}`.
 
 `true`, `false`, `null` lowercase. Array element order is significant and preserved.
 
+A literal denotes **a value**, never a position. This reads as too obvious to state, and it is
+stated because an implementation got it wrong in a way nothing detected: a parser returned the
+offset at which the literal ended, so `{"a":true}` and `{"a":9}` canonicalized alike and `[true]`
+and `[ true]` did not. Whatever else is true of a canonicalizer, two documents differing only in
+insignificant whitespace **MUST** produce the same digest, and two documents differing in a value
+**MUST NOT**.
+
+### R6 — Input must be valid UTF-8
+
+The input is a byte sequence. A byte sequence that is not well-formed UTF-8 **MUST** be rejected
+with `B1_ERR_INVALID_UTF8`. Malformed bytes **MUST NOT** be replaced with U+FFFD, and validity
+**MUST** be established before parsing — a decoder that substitutes has already destroyed the
+evidence by the time any other rule runs.
+
+Overlong encodings, truncated sequences, and surrogate code points encoded as if they were scalars
+(`ED A0 80`) are all malformed and all rejected.
+
+This is normative because three implementations failed it — C#, Kotlin and TypeScript, the last of
+which owns the contract every other language consumes. Each decoded stdin with the runtime's
+default, which is lossy, so `{"a":"\xff"}` and `{"a":"\xfe"}` — two different documents — were
+accepted and given **the same digest**, while eleven implementations rejected both. A digest that
+survives corruption has stopped identifying the bytes it names, which is the one thing a digest is
+for. Note the shape of the failure: nobody wrote a lossy decoder on purpose. Three languages'
+convenient default *is* lossy, and the convenient call is the one that gets written.
+
 ## 3. Digest
 
 ```
@@ -156,3 +181,39 @@ and astral-plane scalars, integers at the ±(2^53 − 1) boundary, and negative 
 Rejection is always explicit. An implementation that silently repairs a document is broken:
 a repaired document produces a digest that no other implementation will reproduce, which converts
 a loud failure into a silent divergence.
+
+**Precedence between tokens is deliberately unspecified.** A document may violate more than one
+rule, and implementations check rules in whatever order their structure makes natural: an invalid
+byte inside a 70-deep array draws `B1_ERR_DEPTH` from six implementations and `B1_ERR_INVALID_UTF8`
+from eight. All fourteen reject it, which is the property that matters; no implementation is wrong.
+
+The consequence is a rule for the corpus, not for implementations: **a negative fixture MUST violate
+exactly one rule**, because `expected.json` records one token per fixture and a two-defect document
+would have it recording an arbitrary choice as though it were the contract.
+
+## 7. Corpus coverage
+
+Agreement on the documents in the corpus says nothing about the documents that are not.
+
+Two CRITICAL defects — the literal-as-position bug in R5, the lossy decoding in R6 — survived 364
+green conformance checks across fourteen implementations. Neither was subtle. Both were invisible
+for the same reason: the corpus contained no `true`, no `false` and no `null`, and no byte sequence
+that was not already valid UTF-8. The checks that existed all passed, and they were checking the
+wrong 26 documents.
+
+So the corpus **MUST** satisfy a declared coverage criterion, and that criterion **MUST** be
+checked rather than remembered:
+
+- every value form the profile admits — object, array, string, integer, `true`, `false`, `null` —
+  appears in at least one positive fixture;
+- every `B1_ERR_*` class in §6 is the expected result of at least one negative fixture;
+- fixtures declared equivalent (differing only in insignificant whitespace, say) carry the same
+  digest in `expected.json`.
+
+`conformance/coverage.json` declares it; `tools/coverage.py` checks it; `rake conform:coverage` runs
+it and `rake verify` includes it. Exit 4 is a coverage gap, which is a verdict rather than a
+malfunction.
+
+What this cannot do is decide what is worth covering — that judgement lives in `coverage.json` and
+will be incomplete again. The claim it supports is "every category we have named is present", never
+"every category exists". That is a smaller claim than it looks, and it is the only one available.

@@ -31,19 +31,42 @@ public static class Program
         return 2;
     }
 
+    /// <summary>
+    /// Reads stdin as UTF-8, refusing malformed bytes rather than replacing them.
+    ///
+    /// <para><c>new UTF8Encoding(false)</c> substitutes U+FFFD for every malformed byte, so the
+    /// invalid input was gone before any check could see it: <c>{"a":"\xff"}</c> and
+    /// <c>{"a":"\xfe"}</c> — two different documents — were accepted and given the same digest,
+    /// while eleven implementations rejected both. A digest that survives corruption has stopped
+    /// identifying the bytes it names.</para>
+    ///
+    /// <para>The second constructor argument is <c>throwOnInvalidBytes</c>. Its default is the
+    /// lossy behaviour, which is why this needs saying out loud rather than being left implied.
+    /// </para>
+    /// </summary>
     private static string ReadStdin()
     {
         using var stdin = Console.OpenStandardInput();
-        using var reader = new StreamReader(stdin, new UTF8Encoding(false), false);
-        return reader.ReadToEnd();
+        using var reader = new StreamReader(stdin, new UTF8Encoding(false, true), false);
+        try
+        {
+            return reader.ReadToEnd();
+        }
+        catch (DecoderFallbackException e)
+        {
+            // Raised as B1Exception so it leaves by the same door as every other rejection: a
+            // caller sees a B1_ERR_* token, not a stack trace it has to parse.
+            throw new B1Exception("B1_ERR_INVALID_UTF8", e.Message);
+        }
     }
 
     private static int Conform()
     {
-        var text = ReadStdin();
         try
         {
-            Console.WriteLine(Canon.DigestText(text));
+            // Inside the try: reading is now a step that can reject, so it must be able to fail
+            // the same way parsing does.
+            Console.WriteLine(Canon.DigestText(ReadStdin()));
             return 0;
         }
         catch (B1Exception e)
@@ -72,9 +95,9 @@ public static class Program
 
     private static int Converge()
     {
-        var text = ReadStdin();
         try
         {
+            var text = ReadStdin();
             if (Canon.Parse(text) is not Json.Obj root)
             {
                 Console.Error.WriteLine("B1_ERR_PARSE");

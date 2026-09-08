@@ -9,9 +9,10 @@
 use crate::canon::{b1c1, digest_value, Json, B1Error, ZERO_LINK};
 use std::collections::BTreeMap;
 use std::fmt;
-use std::fs::OpenOptions;
+use std::fs::{File, OpenOptions, TryLockError};
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
+use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Origin {
@@ -385,6 +386,82 @@ impl fmt::Display for ChainError {
     }
 }
 
+/// How long an appender waits for the chain's tail before refusing.
+///
+/// Bounded rather than indefinite: a holder that has hung must not hang every other appender
+/// forever. Refusing is the honest outcome — the caller learns its record was not written, which is
+/// a fact it can act on, where a silent unserialized append would corrupt history instead.
+const LOCK_TIMEOUT: Duration = Duration::from_secs(10);
+
+/// Holds the exclusive lock on a ledger file for the duration of one append.
+///
+/// Reading the tail and extending it are two operations that must be one. Without this, two
+/// appenders read the same `next_seq` and the same `prev_link`, both write, and the chain gains a
+/// duplicated sequence number, a gap, and a broken link — damage `verify` cannot distinguish from
+/// tampering. A tamper-evident log that manufactures its own false alarms teaches its operator to
+/// ignore the alarm, which costs more than the corruption.
+///
+/// The lock is advisory (`flock`), so it serializes appenders that take it — every writer in this
+/// crate — and does not defend against a process that writes to the file directly. That is the
+/// realistic boundary: the ledger's guarantee has always been evidence of damage, not prevention.
+struct AppendGuard {
+    file: File,
+}
+
+impl AppendGuard {
+    /// Opens the ledger and takes the exclusive lock, waiting up to `LOCK_TIMEOUT`.
+    fn acquire(path: &str) -> Result<AppendGuard, SealError> {
+        if let Some(parent) = Path::new(path).parent() {
+            if !parent.as_os_str().is_empty() {
+                std::fs::create_dir_all(parent).map_err(SealError::Io)?;
+            }
+        }
+        let file = OpenOptions::new()
+            .create(true)
+            .read(true)
+            .append(true)
+            .open(path)
+            .map_err(SealError::Io)?;
+
+        let deadline = Instant::now() + LOCK_TIMEOUT;
+        let mut backoff = Duration::from_millis(1);
+        loop {
+            match file.try_lock() {
+                Ok(()) => return Ok(AppendGuard { file }),
+                Err(TryLockError::Error(e)) => return Err(SealError::Io(e)),
+                Err(TryLockError::WouldBlock) => {
+                    if Instant::now() >= deadline {
+                        return Err(SealError::LockTimeout);
+                    }
+                    std::thread::sleep(backoff);
+                    backoff = (backoff * 2).min(Duration::from_millis(50));
+                }
+            }
+        }
+    }
+
+    /// Writes one record as a single `write_all`.
+    ///
+    /// The line and its newline go in one call because two calls are two chances for another
+    /// appender's bytes to land between them. Under the lock this is belt and braces; it also means
+    /// an append is a single `write(2)` on a file opened `O_APPEND`, which is the one property a
+    /// writer that ignores the lock cannot take away.
+    fn write_line(&mut self, line: &str) -> std::io::Result<()> {
+        let mut buf = Vec::with_capacity(line.len() + 1);
+        buf.extend_from_slice(line.as_bytes());
+        buf.push(b'\n');
+        self.file.write_all(&buf)?;
+        self.file.flush()
+    }
+}
+
+impl Drop for AppendGuard {
+    fn drop(&mut self) {
+        // Closing the descriptor would release the lock anyway; releasing it explicitly says so.
+        let _ = self.file.unlock();
+    }
+}
+
 #[derive(Debug)]
 pub enum SealError {
     NotAnObject,
@@ -396,6 +473,8 @@ pub enum SealError {
     /// check: an unenforced append is exactly the state this validation exists to end.
     SchemaUnavailable,
     SchemaInvalid(String),
+    /// The chain's tail could not be claimed within `LOCK_TIMEOUT`. The record was not written.
+    LockTimeout,
     Canon(B1Error),
     Io(std::io::Error),
 }
@@ -426,6 +505,13 @@ impl fmt::Display for SealError {
                  rather than falling back to a weaker check"
             ),
             SealError::SchemaInvalid(detail) => write!(f, "{detail}"),
+            SealError::LockTimeout => write!(
+                f,
+                "another appender held the chain for longer than {}s; the record was NOT written. \
+                 Appending without the lock would assign a sequence number someone else is already \
+                 using",
+                LOCK_TIMEOUT.as_secs()
+            ),
             SealError::Canon(e) => write!(f, "body is not canonicalizable: {}", e.token()),
             SealError::Io(e) => write!(f, "{e}"),
         }
@@ -486,11 +572,13 @@ impl Ledger {
     pub fn append_value(&self, value: &Json) -> std::io::Result<()> {
         let line = crate::canon::canonicalize(value)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e.token()))?;
-        if let Some(parent) = Path::new(&self.path).parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        let mut f = OpenOptions::new().create(true).append(true).open(&self.path)?;
-        writeln!(f, "{line}")
+        // Every writer to a ledger takes the same lock, so a caller supplying its own sealed record
+        // cannot interleave its bytes with a `seal_and_append` in progress.
+        let mut guard = AppendGuard::acquire(&self.path).map_err(|e| match e {
+            SealError::Io(io) => io,
+            other => std::io::Error::new(std::io::ErrorKind::WouldBlock, other.to_string()),
+        })?;
+        guard.write_line(&line)
     }
 
     /// Seals a caller-supplied record body and appends it, returning the assigned `record_id`.
@@ -533,6 +621,12 @@ impl Ledger {
             return Err(SealError::ContractViolation(violations));
         }
 
+        // Everything below reads the chain's tail and then extends it, and those are one operation
+        // or they are a race. The lock is taken *after* validation because validation is a pure
+        // function of the body: holding the chain while deciding whether a record is even
+        // well-formed would block every other appender for no reason.
+        let mut guard = AppendGuard::acquire(&self.path)?;
+
         let seq = self.next_seq().map_err(SealError::Io)?;
         let prev = self.tail_link().map_err(SealError::Io)?;
 
@@ -544,7 +638,8 @@ impl Ledger {
         let record_id = b1c1(&digest_value(&body_value).map_err(SealError::Canon)?);
 
         sealed.insert("record_id".into(), Json::s(record_id.clone()));
-        self.append_value(&Json::Obj(sealed)).map_err(SealError::Io)?;
+        let line = crate::canon::canonicalize(&Json::Obj(sealed)).map_err(SealError::Canon)?;
+        guard.write_line(&line).map_err(SealError::Io)?;
 
         Ok(record_id)
     }

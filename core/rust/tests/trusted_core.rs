@@ -286,6 +286,73 @@ fn seal_and_append_assigns_position_and_chains() {
 }
 
 #[test]
+fn concurrent_appends_do_not_corrupt_the_chain() {
+    // Before the lock, `seal_and_append` read `next_seq` and `tail_link` and then wrote, with
+    // nothing held between. Twenty-four concurrent appends produced roughly eight duplicated
+    // sequence numbers, eight gaps, and a chain that failed verification — every time.
+    //
+    // What made that critical is not the lost records. It is that `verify` cannot tell the damage
+    // from tampering, so the component whose only job is tamper-evidence manufactured its own false
+    // alarms during ordinary use. `b1 plan` appends on every run; two operators planning at once
+    // was enough.
+    const WRITERS: usize = 24;
+
+    let path = temp_path("concurrent");
+    let _ = std::fs::remove_file(&path);
+
+    let handles: Vec<_> = (0..WRITERS)
+        .map(|i| {
+            let path = path.clone();
+            std::thread::spawn(move || {
+                Ledger::new(&path)
+                    .seal_and_append(&body(&format!("writer-{i}")))
+                    .expect("every append must either be written or say why not")
+            })
+        })
+        .collect();
+
+    let ids: Vec<String> = handles.into_iter().map(|h| h.join().unwrap()).collect();
+    assert_eq!(ids.len(), WRITERS);
+
+    let ledger = Ledger::new(&path);
+    assert!(
+        matches!(ledger.verify().unwrap(), Ok(n) if n == WRITERS),
+        "the chain must verify with every record present: {:?}",
+        ledger.verify().unwrap()
+    );
+
+    // Verification walks the chain, so it already proves the links. Check the sequence numbers
+    // separately: a duplicate seq was the first symptom, and asserting it directly means a
+    // regression names itself rather than arriving as a generic chain failure.
+    let mut seqs: Vec<i64> = ledger
+        .read_lines()
+        .unwrap()
+        .iter()
+        .map(|l| {
+            b1_ledger::canon::parse(l)
+                .unwrap()
+                .get("seq")
+                .and_then(Json::as_int)
+                .expect("every sealed record carries a seq")
+        })
+        .collect();
+    seqs.sort_unstable();
+    assert_eq!(
+        seqs,
+        (0..WRITERS as i64).collect::<Vec<_>>(),
+        "sequence numbers must be exactly 0..n with no duplicate and no gap"
+    );
+
+    // Distinct records, so no two writers sealed the same content at the same position.
+    let mut unique = ids.clone();
+    unique.sort();
+    unique.dedup();
+    assert_eq!(unique.len(), WRITERS, "every record must have its own identity");
+
+    let _ = std::fs::remove_file(&path);
+}
+
+#[test]
 fn seal_and_append_refuses_a_body_claiming_its_own_position() {
     let path = temp_path("forged");
     let _ = std::fs::remove_file(&path);
@@ -647,4 +714,56 @@ fn record_id_excludes_itself_and_covers_everything_else() {
     let line = b1_ledger::canon::canonicalize(&r.to_json()).unwrap();
     let back = parse(&line).unwrap();
     assert_eq!(back.get("record_id").and_then(Json::as_str), Some(r.record_id.as_str()));
+}
+
+// --- the operator-facing binary ----------------------------------------------
+//
+// These run `b1ledger` as a process. The library's `verify` returns a typed result; what an
+// operator and a monitoring script actually see is this binary's exit code and its words, and those
+// are what went wrong below.
+
+fn b1ledger(args: &[&str]) -> (i32, String, String) {
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_b1ledger"))
+        .args(args)
+        .output()
+        .expect("b1ledger must be runnable");
+    (
+        out.status.code().unwrap_or(-1),
+        String::from_utf8_lossy(&out.stdout).into_owned(),
+        String::from_utf8_lossy(&out.stderr).into_owned(),
+    )
+}
+
+#[test]
+fn verifying_a_ledger_that_does_not_exist_is_not_intact() {
+    // `b1ledger verify /nonexistent` printed "chain intact: 0 record(s) verified" and exited 0.
+    // `read_lines` treats a missing file as empty, which is right for `next_seq` — the first append
+    // must create it — and catastrophic here: a monitor pointed at a deleted ledger, or at a
+    // mistyped path, was told the chain was fine. Absence is the one thing this command must never
+    // render as integrity.
+    let missing = temp_path("no-such-ledger");
+    let _ = std::fs::remove_file(&missing);
+
+    let (code, stdout, stderr) = b1ledger(&["verify", &missing]);
+    assert_ne!(code, 0, "an absent ledger must not exit 0");
+    assert!(
+        !stdout.contains("intact"),
+        "an absent ledger must not be reported as intact: {stdout}"
+    );
+    assert!(stderr.contains("ABSENT"), "the reason must be legible: {stderr}");
+}
+
+#[test]
+fn verifying_an_empty_ledger_is_intact() {
+    // The distinction the fix has to preserve: a ledger that exists and holds nothing is a
+    // correctly initialized ledger, not a missing one. Reporting *that* as an error would trade one
+    // false alarm for another.
+    let empty = temp_path("empty-ledger");
+    std::fs::write(&empty, "").unwrap();
+
+    let (code, stdout, _) = b1ledger(&["verify", &empty]);
+    assert_eq!(code, 0, "an existing, empty ledger verifies");
+    assert!(stdout.contains("0 record(s)"), "{stdout}");
+
+    let _ = std::fs::remove_file(&empty);
 }

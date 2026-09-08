@@ -128,6 +128,48 @@
       ],
       "negative": false
     },
+    "literals-nested.json": {
+      "kind": "digest",
+      "digest": "ff9ecb35d6c7280dffc3302efb4af2080790fe8d94d5deabb4ba78524b18545c",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "literals.json": {
+      "kind": "digest",
+      "digest": "22e00dc2f7b01420f940fbdbfbdf34fa0667cc6500186495023ba37722cbd05e",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": false
+    },
     "neg-depth.json": {
       "kind": "error",
       "error": "B1_ERR_DEPTH",
@@ -194,6 +236,27 @@
     "neg-float.json": {
       "kind": "error",
       "error": "B1_ERR_NONINTEGER_NUMBER",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-invalid-utf8-byte.json": {
+      "kind": "error",
+      "error": "B1_ERR_INVALID_UTF8",
       "agreed_by": [
         "c",
         "cpp",
@@ -380,6 +443,27 @@
       ],
       "negative": true
     },
+    "neg-overlong-utf8.json": {
+      "kind": "error",
+      "error": "B1_ERR_INVALID_UTF8",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": true
+    },
     "neg-too-large.json": {
       "kind": "error",
       "error": "B1_ERR_NONINTEGER_NUMBER",
@@ -422,9 +506,51 @@
       ],
       "negative": true
     },
+    "neg-truncated-utf8.json": {
+      "kind": "error",
+      "error": "B1_ERR_INVALID_UTF8",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": true
+    },
     "neg-unterminated.json": {
       "kind": "error",
       "error": "B1_ERR_PARSE",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-utf8-surrogate.json": {
+      "kind": "error",
+      "error": "B1_ERR_INVALID_UTF8",
       "agreed_by": [
         "c",
         "cpp",
@@ -530,6 +656,90 @@
     "unicode-escape-pair.json": {
       "kind": "digest",
       "digest": "443730b2fd6a2991f488771c056a3e303c228b9e94b22d31f9fb959654fd4a1d",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "whitespace-crlf.json": {
+      "kind": "digest",
+      "digest": "51705a2c9eb3e7e410a58f696a770c3ac3885a0cf43eb7fc88f5e47c11d4d30d",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "whitespace-lines.json": {
+      "kind": "digest",
+      "digest": "51705a2c9eb3e7e410a58f696a770c3ac3885a0cf43eb7fc88f5e47c11d4d30d",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "whitespace-loose.json": {
+      "kind": "digest",
+      "digest": "51705a2c9eb3e7e410a58f696a770c3ac3885a0cf43eb7fc88f5e47c11d4d30d",
+      "agreed_by": [
+        "c",
+        "cpp",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "swift",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "whitespace-tight.json": {
+      "kind": "digest",
+      "digest": "51705a2c9eb3e7e410a58f696a770c3ac3885a0cf43eb7fc88f5e47c11d4d30d",
       "agreed_by": [
         "c",
         "cpp",
