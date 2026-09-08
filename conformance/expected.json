@@ -1,0 +1,195 @@
+{
+  "corpus_version": "b1-conformance/1",
+  "min_agreement": 2,
+  "fixtures": {
+    "deep-legal.json": {
+      "kind": "digest",
+      "digest": "27f58b7e6b2eff7e3ac87d333cf5a52f6e8a7a809cc1ec2fd39c48b34d3e6d15",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "empty-array.json": {
+      "kind": "digest",
+      "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "empty-object.json": {
+      "kind": "digest",
+      "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "integers.json": {
+      "kind": "digest",
+      "digest": "a91b90be91863c22affbea0e90b121dfba1dd310d60ab01100161ef35dbe8df5",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "ir-fragment.json": {
+      "kind": "digest",
+      "digest": "03c9b7293834b4cdda92e596043bee6af4f4e82eefd80ac1df25863ab57bcd65",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "key-order.json": {
+      "kind": "digest",
+      "digest": "8ca272cdc8e849a1caa3bf93a0dd17f426a503652b2c575fcc112ef9c2fa2656",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "neg-depth.json": {
+      "kind": "error",
+      "error": "B1_ERR_DEPTH",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-duplicate-key.json": {
+      "kind": "error",
+      "error": "B1_ERR_DUPLICATE_KEY",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-exponent.json": {
+      "kind": "error",
+      "error": "B1_ERR_NONINTEGER_NUMBER",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-float.json": {
+      "kind": "error",
+      "error": "B1_ERR_NONINTEGER_NUMBER",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-key-empty.json": {
+      "kind": "error",
+      "error": "B1_ERR_KEY_SYNTAX",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-key-space.json": {
+      "kind": "error",
+      "error": "B1_ERR_KEY_SYNTAX",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-key-unicode.json": {
+      "kind": "error",
+      "error": "B1_ERR_KEY_SYNTAX",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-leading-zero.json": {
+      "kind": "error",
+      "error": "B1_ERR_PARSE",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-negative-zero.json": {
+      "kind": "error",
+      "error": "B1_ERR_NONINTEGER_NUMBER",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-too-large.json": {
+      "kind": "error",
+      "error": "B1_ERR_NONINTEGER_NUMBER",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-trailing-input.json": {
+      "kind": "error",
+      "error": "B1_ERR_PARSE",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-unterminated.json": {
+      "kind": "error",
+      "error": "B1_ERR_PARSE",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "nested-empty.json": {
+      "kind": "digest",
+      "digest": "60a6fb565226c4fc31f5905be022713e433d80451d0c65ff2dfb9ac28cdc734c",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "strings-escapes.json": {
+      "kind": "digest",
+      "digest": "54cba13480ca70acdbb21c0051e483167e095f97465ebb8a3a46ac8be432682d",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "strings-unicode.json": {
+      "kind": "digest",
+      "digest": "d45105946d0760f5a67d2a7dc4646cf30bb6f7bfea2640d3671499bed89532d8",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    }
+  }
+}

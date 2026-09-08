@@ -1,0 +1,386 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b1.local/schema/quality-vector",
+  "title": "QualityVector",
+  "type": "object",
+  "properties": {
+    "prompt_adherence_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Does the output do what the prompt specified"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "character_identity_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Identity preserved against the identity anchor"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "temporal_identity_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Identity preserved across frames within the segment"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "anatomy_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Anatomical coherence"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "motion_coherence_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Motion is continuous and explicable"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "motion_complexity_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Motion is as complex as specified, not simplified away"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "physical_plausibility_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Behaviour consistent with physics expectations"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "interaction_correctness_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Interaction graph realised correctly"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "camera_accuracy_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Camera did what the camera motion specified"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "spatial_consistency_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Spatial layout preserved"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "depth_consistency_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Depth layer ordering preserved"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "occlusion_consistency_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Occlusion behaves consistently"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lighting_consistency_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Lighting stable or transitioning as specified"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "material_consistency_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Material behaviour consistent"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "environment_consistency_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Environment does not drift"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "style_consistency_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Visual style held"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reference_adherence_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "References honoured within their bound roles"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "narrative_progression_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Narrative advanced as specified"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "audio_alignment_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Audio aligned with visual events"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "continuity_start_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "First frame compatible with the previous terminal state"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "continuity_end_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "Final frame leaves an extendable state"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "artifact_severity_mu": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "x-b1-unit": "mu",
+          "description": "INVERTED: higher is worse. Kept unnegated to match what is measured."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "measurement_basis": {
+      "type": "object",
+      "properties": {
+        "per_dimension": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimension": {
+                "type": "string"
+              },
+              "basis": {
+                "enum": [
+                  "MEASURED",
+                  "DECLARED",
+                  "INFERRED",
+                  "PROXY",
+                  "UNAVAILABLE"
+                ]
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "dimension",
+              "basis",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "per_dimension"
+      ],
+      "additionalProperties": false
+    },
+    "forbidden_event_count": {
+      "type": "integer",
+      "minimum": 0,
+      "x-b1-unit": "count"
+    }
+  },
+  "required": [
+    "prompt_adherence_mu",
+    "character_identity_mu",
+    "temporal_identity_mu",
+    "anatomy_mu",
+    "motion_coherence_mu",
+    "motion_complexity_mu",
+    "physical_plausibility_mu",
+    "interaction_correctness_mu",
+    "camera_accuracy_mu",
+    "spatial_consistency_mu",
+    "depth_consistency_mu",
+    "occlusion_consistency_mu",
+    "lighting_consistency_mu",
+    "material_consistency_mu",
+    "environment_consistency_mu",
+    "style_consistency_mu",
+    "reference_adherence_mu",
+    "narrative_progression_mu",
+    "audio_alignment_mu",
+    "continuity_start_mu",
+    "continuity_end_mu",
+    "artifact_severity_mu",
+    "measurement_basis",
+    "forbidden_event_count"
+  ],
+  "additionalProperties": false
+}

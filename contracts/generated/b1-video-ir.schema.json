@@ -1,0 +1,906 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b1.local/schema/b1-video-ir",
+  "title": "B1_VIDEO_IR",
+  "type": "object",
+  "properties": {
+    "ir_version": {
+      "const": "b1-video-ir/1"
+    },
+    "objective": {
+      "type": "string",
+      "description": "U-level, in the user's own terms"
+    },
+    "scene_mode": {
+      "enum": [
+        "single_shot",
+        "continuation",
+        "extension",
+        "variation",
+        "repair"
+      ]
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 1,
+      "x-b1-unit": "ms"
+    },
+    "aspect_ratio": {
+      "type": "object",
+      "properties": {
+        "w": {
+          "type": "integer",
+          "minimum": 1,
+          "x-b1-unit": "count"
+        },
+        "h": {
+          "type": "integer",
+          "minimum": 1,
+          "x-b1-unit": "count"
+        }
+      },
+      "required": [
+        "w",
+        "h"
+      ],
+      "additionalProperties": false
+    },
+    "target_resolution": {
+      "type": "object",
+      "properties": {
+        "width_px": {
+          "type": "integer",
+          "minimum": 1,
+          "x-b1-unit": "px"
+        },
+        "height_px": {
+          "type": "integer",
+          "minimum": 1,
+          "x-b1-unit": "px"
+        }
+      },
+      "required": [
+        "width_px",
+        "height_px"
+      ],
+      "additionalProperties": false
+    },
+    "target_frame_rate_mfps": {
+      "type": "integer",
+      "minimum": 1,
+      "x-b1-unit": "mfps",
+      "description": "23976 = 23.976 fps"
+    },
+    "characters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]{1,64}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "identity_anchor": {
+            "type": "string",
+            "description": "Stable trait set that must survive across segments"
+          },
+          "costume": {
+            "type": "string"
+          },
+          "body_design": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "identity_constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "character_id": {
+            "type": "string"
+          },
+          "constraint": {
+            "type": "string"
+          },
+          "tolerance_mu": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000,
+            "x-b1-unit": "mu",
+            "description": "Permitted identity drift before this constraint is violated"
+          }
+        },
+        "required": [
+          "character_id",
+          "constraint",
+          "tolerance_mu"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "spatial_layout": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "spatial_layout"
+      ],
+      "additionalProperties": false
+    },
+    "depth_layers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "x-b1-unit": "count"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "index",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "foreground_elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]{1,64}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "depth_layer": {
+            "type": "integer",
+            "minimum": 0,
+            "x-b1-unit": "count"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "midground_elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]{1,64}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "depth_layer": {
+            "type": "integer",
+            "minimum": 0,
+            "x-b1-unit": "count"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "background_elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]{1,64}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "depth_layer": {
+            "type": "integer",
+            "minimum": 0,
+            "x-b1-unit": "count"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "props": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]{1,64}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "depth_layer": {
+            "type": "integer",
+            "minimum": 0,
+            "x-b1-unit": "count"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "lighting": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "key_direction": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "atmosphere": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "material_behavior": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "material": {
+            "type": "string"
+          },
+          "behavior": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "material",
+          "behavior"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "camera_state": {
+      "type": "object",
+      "properties": {
+        "position_mm": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "integer",
+              "x-b1-unit": "mm"
+            },
+            "y": {
+              "type": "integer",
+              "x-b1-unit": "mm"
+            },
+            "z": {
+              "type": "integer",
+              "x-b1-unit": "mm"
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "z"
+          ],
+          "additionalProperties": false
+        },
+        "orientation_mdeg": {
+          "type": "object",
+          "properties": {
+            "pan": {
+              "type": "integer",
+              "x-b1-unit": "mdeg"
+            },
+            "tilt": {
+              "type": "integer",
+              "x-b1-unit": "mdeg"
+            },
+            "roll": {
+              "type": "integer",
+              "x-b1-unit": "mdeg"
+            }
+          },
+          "required": [
+            "pan",
+            "tilt",
+            "roll"
+          ],
+          "additionalProperties": false
+        },
+        "focal_length_mm": {
+          "type": "integer",
+          "x-b1-unit": "mm"
+        },
+        "framing": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "position_mm",
+        "orientation_mdeg",
+        "focal_length_mm",
+        "framing"
+      ],
+      "additionalProperties": false
+    },
+    "camera_motion": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "static",
+              "pan",
+              "tilt",
+              "dolly",
+              "track",
+              "crane",
+              "handheld",
+              "zoom",
+              "orbit"
+            ]
+          },
+          "start_ms": {
+            "type": "integer",
+            "x-b1-unit": "ms"
+          },
+          "end_ms": {
+            "type": "integer",
+            "x-b1-unit": "ms"
+          },
+          "magnitude_mm": {
+            "type": "integer",
+            "x-b1-unit": "mm"
+          },
+          "magnitude_mdeg": {
+            "type": "integer",
+            "x-b1-unit": "mdeg"
+          },
+          "subject_framing_note": {
+            "type": "string",
+            "description": "Observable framing behaviour, not a quality adjective"
+          }
+        },
+        "required": [
+          "kind",
+          "start_ms",
+          "end_ms"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "lens_behavior": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "focus_behavior": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "subject_motion": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "start_ms": {
+            "type": "integer",
+            "x-b1-unit": "ms"
+          },
+          "end_ms": {
+            "type": "integer",
+            "x-b1-unit": "ms"
+          },
+          "phase_at_start": {
+            "type": "string",
+            "description": "e.g. 'left-foot contact', inherited from continuity state"
+          },
+          "phase_at_end": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_id",
+          "action",
+          "start_ms",
+          "end_ms"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "secondary_motion": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "element_id": {
+            "type": "string"
+          },
+          "behavior": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "element_id",
+          "behavior"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "interaction_graph": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "actor_id": {
+            "type": "string"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "relation": {
+            "type": "string"
+          },
+          "start_ms": {
+            "type": "integer",
+            "x-b1-unit": "ms"
+          },
+          "end_ms": {
+            "type": "integer",
+            "x-b1-unit": "ms"
+          }
+        },
+        "required": [
+          "actor_id",
+          "target_id",
+          "relation",
+          "start_ms",
+          "end_ms"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "physics_expectations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string"
+          },
+          "expectation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "expectation"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "animation_timing": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "beat_ms": {
+          "type": "integer",
+          "x-b1-unit": "ms"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "rhythm": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "audio_state": {
+      "type": "object",
+      "properties": {
+        "present": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "phase_note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "present"
+      ],
+      "additionalProperties": false
+    },
+    "narrative_state": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "unresolved": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "description",
+        "unresolved"
+      ],
+      "additionalProperties": false
+    },
+    "visual_style": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "reference_bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "reference_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]{1,64}$"
+          },
+          "media_digest": {
+            "type": "string",
+            "pattern": "^b1c1:[0-9a-f]{64}$",
+            "description": "Digest of the referenced media bytes"
+          },
+          "role": {
+            "enum": [
+              "CHARACTER_IDENTITY",
+              "FACE_IDENTITY",
+              "BODY_DESIGN",
+              "COSTUME",
+              "ENVIRONMENT",
+              "OBJECT",
+              "STYLE",
+              "COLOR",
+              "COMPOSITION",
+              "CAMERA",
+              "MOTION",
+              "ANIMATION_TIMING",
+              "POSE",
+              "ACTION",
+              "VIDEO_CONTINUITY",
+              "AUDIO",
+              "OTHER_EXPLICIT_ROLE"
+            ]
+          },
+          "role_detail": {
+            "type": "string",
+            "description": "Required when role is OTHER_EXPLICIT_ROLE"
+          },
+          "weight_ppm": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000,
+            "x-b1-unit": "ppm"
+          },
+          "applies_to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "IR paths this reference may influence. The enforcement point for the no-silent-dominance rule."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Which identified requirement this reference serves. Never optional."
+          },
+          "origin": {
+            "enum": [
+              "U",
+              "M",
+              "P",
+              "E",
+              "UNKNOWN"
+            ]
+          }
+        },
+        "required": [
+          "reference_id",
+          "media_digest",
+          "role",
+          "weight_ppm",
+          "applies_to",
+          "rationale",
+          "origin"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "continuity_constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "constraint": {
+            "type": "string"
+          },
+          "source_segment_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "constraint"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "negative_constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "forbid": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "forbid",
+          "rationale"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "final_frame_requirements": {
+      "type": "object",
+      "properties": {
+        "must_be_extendable": {
+          "type": "boolean",
+          "description": "Default true; false only when the user asked to conclude the event"
+        },
+        "forbidden_endings": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "arbitrary_freeze",
+              "celebration",
+              "pose",
+              "fade_out",
+              "hard_stop",
+              "unexplained_camera_halt",
+              "artificial_reset",
+              "neutral_object_reset"
+            ]
+          }
+        },
+        "unresolved_motion_required": {
+          "type": "boolean"
+        },
+        "terminal_state_capture": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "must_be_extendable",
+        "forbidden_endings",
+        "unresolved_motion_required",
+        "terminal_state_capture"
+      ],
+      "additionalProperties": false
+    },
+    "verification_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "dimension": {
+            "type": "string"
+          },
+          "comparator": {
+            "enum": [
+              "gte",
+              "lte",
+              "eq"
+            ]
+          },
+          "threshold_mu": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000,
+            "x-b1-unit": "mu"
+          },
+          "rationale": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dimension",
+          "comparator",
+          "threshold_mu",
+          "rationale"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "origin": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "origin": {
+                "enum": [
+                  "U",
+                  "M",
+                  "P",
+                  "E",
+                  "UNKNOWN"
+                ]
+              }
+            },
+            "required": [
+              "path",
+              "origin"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "fields"
+      ],
+      "additionalProperties": false,
+      "description": "Per-field U/M/P/E attribution. Excluded from ir_digest; unattributed fields are UNKNOWN, never U."
+    }
+  },
+  "required": [
+    "ir_version",
+    "objective",
+    "scene_mode",
+    "duration_ms",
+    "aspect_ratio",
+    "target_resolution",
+    "target_frame_rate_mfps",
+    "characters",
+    "identity_constraints",
+    "environment",
+    "depth_layers",
+    "foreground_elements",
+    "midground_elements",
+    "background_elements",
+    "props",
+    "lighting",
+    "atmosphere",
+    "material_behavior",
+    "camera_state",
+    "camera_motion",
+    "lens_behavior",
+    "subject_motion",
+    "secondary_motion",
+    "interaction_graph",
+    "physics_expectations",
+    "animation_timing",
+    "rhythm",
+    "audio_state",
+    "narrative_state",
+    "visual_style",
+    "reference_bindings",
+    "continuity_constraints",
+    "negative_constraints",
+    "final_frame_requirements",
+    "verification_requirements",
+    "origin"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b1.local/schema/generation-package",
+  "title": "GenerationPackage",
+  "type": "object",
+  "properties": {
+    "package_version": {
+      "const": "b1-generation-package/1"
+    },
+    "ir_digest": {
+      "type": "string",
+      "pattern": "^b1c1:[0-9a-f]{64}$"
+    },
+    "route": {
+      "enum": [
+        "A_OFFICIAL_SEEDANCE",
+        "B_NETA_ROUTER",
+        "C_NETA_NATIVE",
+        "D_OTHER_AUTHORIZED",
+        "E_PLANNING_ONLY"
+      ]
+    },
+    "provider_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "compiled_prompt": {
+      "type": "string"
+    },
+    "negative_prompt": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reference_manifest": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "reference_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "media_digest": {
+            "type": "string",
+            "pattern": "^b1c1:[0-9a-f]{64}$"
+          },
+          "provider_slot": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Null while the provider contract is unverified"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "reference_id",
+          "role",
+          "media_digest",
+          "provider_slot"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "provider_request": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "contract_status": {
+              "enum": [
+                "VERIFIED",
+                "CONTRACT_UNVERIFIED",
+                "UNKNOWN"
+              ]
+            },
+            "body_canonical": {
+              "type": "string",
+              "description": "Canonical JSON of the request body as compiled"
+            }
+          },
+          "required": [
+            "contract_status",
+            "body_canonical"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "continuation_state_digest": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^b1c1:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "gate_policy_digest": {
+      "type": "string",
+      "pattern": "^b1c1:[0-9a-f]{64}$"
+    },
+    "execution_status": {
+      "enum": [
+        "NOT_EXECUTED",
+        "EXECUTED"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "VERIFIED",
+        "PARTIAL",
+        "FAILED",
+        "IN_DOUBT",
+        "NOT_EXECUTED"
+      ]
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "package_version",
+    "ir_digest",
+    "route",
+    "provider_id",
+    "model",
+    "compiled_prompt",
+    "negative_prompt",
+    "reference_manifest",
+    "provider_request",
+    "continuation_state_digest",
+    "gate_policy_digest",
+    "execution_status",
+    "outcome",
+    "notes"
+  ],
+  "additionalProperties": false
+}

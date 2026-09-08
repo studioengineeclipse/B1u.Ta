@@ -1,0 +1,397 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b1.local/schema/ledger-record",
+  "title": "LedgerRecord",
+  "type": "object",
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "x-b1-unit": "count"
+    },
+    "prev_link": {
+      "type": "string",
+      "pattern": "^b1c1:[0-9a-f]{64}$"
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^b1c1:[0-9a-f]{64}$"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "derived_need": {
+      "type": "string"
+    },
+    "origin": {
+      "enum": [
+        "U",
+        "M",
+        "P",
+        "E",
+        "UNKNOWN"
+      ]
+    },
+    "causal_parents": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^b1c1:[0-9a-f]{64}$"
+      }
+    },
+    "authority": {
+      "type": "string"
+    },
+    "authorization_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "envelope_digest": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^b1c1:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "effect_time_validation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "checked_at_ms": {
+              "type": "integer",
+              "x-b1-unit": "ms"
+            },
+            "gate_state": {
+              "enum": [
+                "OPEN",
+                "CLOSED_UNAUTHORIZED",
+                "CLOSED_STALE",
+                "CLOSED_EXPIRED",
+                "CLOSED_SCOPE_VIOLATION",
+                "CLOSED_UNKNOWN_RECOVERY"
+              ]
+            },
+            "recomputed_envelope_digest": {
+              "type": "string",
+              "pattern": "^b1c1:[0-9a-f]{64}$"
+            },
+            "matched": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "checked_at_ms",
+            "gate_state",
+            "recomputed_envelope_digest",
+            "matched"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "executor": {
+      "type": "string",
+      "description": "Program identity: which logical component was to act"
+    },
+    "execution_identity": {
+      "type": "string",
+      "description": "Which concrete runtime/process/provider instance acted"
+    },
+    "attempt_identity": {
+      "type": "string",
+      "description": "Which attempt. A retry is a new attempt, never the same one."
+    },
+    "action": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "e.g. generate_segment, write_file, push_branch, provider_call"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "persistent": {
+          "type": "boolean",
+          "description": "Whether this action produces a lasting state transition"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "target",
+        "persistent"
+      ],
+      "additionalProperties": false
+    },
+    "receipt": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "executor_claim": {
+              "type": "string",
+              "description": "What the executor said happened. Evidence, never proof."
+            },
+            "status_code": {
+              "type": "string"
+            },
+            "received_at_ms": {
+              "type": "integer",
+              "x-b1-unit": "ms"
+            }
+          },
+          "required": [
+            "executor_claim",
+            "received_at_ms"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observed_effect": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "observation": {
+              "type": "string",
+              "description": "What was independently observed, not what was claimed"
+            },
+            "observer": {
+              "type": "string"
+            },
+            "observed_at_ms": {
+              "type": "integer",
+              "x-b1-unit": "ms"
+            },
+            "media_digest": {
+              "type": "string",
+              "pattern": "^b1c1:[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "observation",
+            "observer",
+            "observed_at_ms"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "objective_postcondition": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "statement": {
+              "type": "string"
+            },
+            "satisfied": {
+              "type": "boolean"
+            },
+            "method": {
+              "type": "string",
+              "description": "How satisfaction was determined"
+            },
+            "unmet": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "statement",
+            "satisfied",
+            "method",
+            "unmet"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "persistent_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "user_visible": {
+      "type": "boolean"
+    },
+    "reason_persisted": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "effect_class": {
+      "enum": [
+        "REVERSIBLE",
+        "COMPENSATABLE",
+        "IRREVERSIBLE",
+        "UNKNOWN"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^b1c1:[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "kind",
+          "detail"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "proof": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "claim": {
+              "type": "string"
+            },
+            "basis": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "claim",
+            "basis"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "present_validity": {
+      "enum": [
+        "VERIFIED",
+        "WORKING_ASSUMPTION",
+        "UNKNOWN",
+        "IN_DOUBT"
+      ]
+    },
+    "recovery_state": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "available": {
+              "type": "boolean"
+            },
+            "method": {
+              "type": "string"
+            },
+            "known_data_loss": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "unknown_data_loss": {
+              "type": "boolean",
+              "description": "True when the extent of loss could not be established"
+            }
+          },
+          "required": [
+            "available",
+            "known_data_loss",
+            "unknown_data_loss"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observed_at_ms": {
+      "type": "integer",
+      "x-b1-unit": "ms"
+    }
+  },
+  "required": [
+    "seq",
+    "prev_link",
+    "record_id",
+    "goal",
+    "derived_need",
+    "origin",
+    "causal_parents",
+    "authority",
+    "authorization_ref",
+    "envelope_digest",
+    "effect_time_validation",
+    "executor",
+    "execution_identity",
+    "attempt_identity",
+    "action",
+    "receipt",
+    "observed_effect",
+    "objective_postcondition",
+    "persistent_id",
+    "user_visible",
+    "reason_persisted",
+    "effect_class",
+    "evidence",
+    "proof",
+    "present_validity",
+    "recovery_state",
+    "observed_at_ms"
+  ],
+  "additionalProperties": false
+}

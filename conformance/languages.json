@@ -1,0 +1,119 @@
+{
+  "manifest_version": "b1-languages/1",
+  "note": "How each of the fourteen languages builds and exposes its `conform` entrypoint. tools/probe derives participation status from actually running these, never from this file's claims.",
+  "languages": [
+    {
+      "id": "c",
+      "name": "C",
+      "responsibility": "Normative signal kernel: SHA-256, B1-CANON-1, frame signature",
+      "dir": "core/c",
+      "build": "make -s -C core/c",
+      "conform": "core/c/build/b1conform",
+      "normative": true
+    },
+    {
+      "id": "cpp",
+      "name": "C++",
+      "responsibility": "Media/temporal analyzer",
+      "dir": "core/cpp",
+      "build": "make -s -C core/cpp",
+      "conform": "core/cpp/build/b1conform"
+    },
+    {
+      "id": "rust",
+      "name": "Rust",
+      "responsibility": "Causal ledger + authority gate",
+      "dir": "core/rust",
+      "build": "cargo build --quiet --manifest-path core/rust/Cargo.toml --offline",
+      "conform": "core/rust/target/debug/b1conform"
+    },
+    {
+      "id": "typescript",
+      "name": "TypeScript",
+      "responsibility": "Canonical contract + schema generation",
+      "dir": "contracts",
+      "build": "tsc -p contracts/tsconfig.json",
+      "conform": "node contracts/dist/conform.js"
+    },
+    {
+      "id": "javascript",
+      "name": "JavaScript",
+      "responsibility": "Zero-build browser review surface",
+      "dir": "surfaces/web",
+      "build": null,
+      "conform": "node surfaces/web/conform.mjs"
+    },
+    {
+      "id": "go",
+      "name": "Go",
+      "responsibility": "Orchestration daemon, discovery, job graph, CLI",
+      "dir": "engine/go",
+      "build": "cd engine/go && go build -o build/b1conform ./cmd/b1conform",
+      "conform": "engine/go/build/b1conform"
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "responsibility": "Quality vector, gates, failure localization",
+      "dir": "engine/python",
+      "build": null,
+      "conform": "python3 engine/python/conform.py"
+    },
+    {
+      "id": "java",
+      "name": "Java",
+      "responsibility": "Provider-neutral compiler and prompt compilation",
+      "dir": "engine/jvm/java",
+      "build": "javac -d engine/jvm/java/build $(find engine/jvm/java/src -name '*.java')",
+      "conform": "java -cp engine/jvm/java/build b1.compiler.Conform"
+    },
+    {
+      "id": "kotlin",
+      "name": "Kotlin",
+      "responsibility": "Continuity engine: terminal state, priority lattice",
+      "dir": "engine/jvm/kotlin",
+      "build": "kotlinc engine/jvm/kotlin/src/main/kotlin -include-runtime -d engine/jvm/kotlin/build/b1continuity.jar",
+      "conform": "java -jar engine/jvm/kotlin/build/b1continuity.jar"
+    },
+    {
+      "id": "swift",
+      "name": "Swift",
+      "responsibility": "Reference role algebra and boundary enforcement",
+      "dir": "engine/swift",
+      "build": "swiftc -O -o engine/swift/build/b1reference engine/swift/Sources/B1Reference/*.swift",
+      "conform": "engine/swift/build/b1reference conform"
+    },
+    {
+      "id": "csharp",
+      "name": "C#",
+      "responsibility": "Convergence and regression gate",
+      "dir": "engine/csharp/B1.Convergence",
+      "build": "dotnet build engine/csharp/B1.Convergence -c Release -v quiet --nologo",
+      "conform": "dotnet engine/csharp/B1.Convergence/bin/Release/net8.0/B1.Convergence.dll conform"
+    },
+    {
+      "id": "php",
+      "name": "PHP",
+      "responsibility": "Evidence library server",
+      "dir": "surfaces/php",
+      "build": null,
+      "conform": "php surfaces/php/conform.php"
+    },
+    {
+      "id": "ruby",
+      "name": "Ruby",
+      "responsibility": "Authoring DSL, polyglot build graph, report generation",
+      "dir": "surfaces/ruby",
+      "build": null,
+      "conform": "ruby surfaces/ruby/conform.rb"
+    },
+    {
+      "id": "dart",
+      "name": "Dart",
+      "responsibility": "Authority envelope presenter",
+      "dir": "engine/dart",
+      "build": null,
+      "conform": "dart run engine/dart/bin/conform.dart"
+    }
+  ]
+}

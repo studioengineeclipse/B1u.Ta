@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b1.local/schema/authority-envelope",
+  "title": "AuthorityEnvelope",
+  "type": "object",
+  "properties": {
+    "envelope_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{1,64}$"
+    },
+    "proposed_action": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "e.g. generate_segment, write_file, push_branch, provider_call"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "persistent": {
+          "type": "boolean",
+          "description": "Whether this action produces a lasting state transition"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "target",
+        "persistent"
+      ],
+      "additionalProperties": false
+    },
+    "target": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Bounds of the authorization. What is not listed is not authorized."
+    },
+    "expected_effect": {
+      "type": "string"
+    },
+    "relevant_state_digest": {
+      "type": "string",
+      "pattern": "^b1c1:[0-9a-f]{64}$",
+      "description": "Digest of the state the plan assumed"
+    },
+    "plan_digest": {
+      "type": "string",
+      "pattern": "^b1c1:[0-9a-f]{64}$",
+      "description": "Digest of the plan at authorization time"
+    },
+    "causal_objective": {
+      "type": "string"
+    },
+    "effect_class": {
+      "enum": [
+        "REVERSIBLE",
+        "COMPENSATABLE",
+        "IRREVERSIBLE",
+        "UNKNOWN"
+      ]
+    },
+    "authorized_at_ms": {
+      "type": "integer",
+      "x-b1-unit": "ms"
+    },
+    "authorized_by": {
+      "type": "string"
+    },
+    "max_age_ms": {
+      "type": "integer",
+      "x-b1-unit": "ms",
+      "description": "After this, the authorization is EXPIRED"
+    }
+  },
+  "required": [
+    "envelope_id",
+    "proposed_action",
+    "target",
+    "scope",
+    "expected_effect",
+    "relevant_state_digest",
+    "plan_digest",
+    "causal_objective",
+    "effect_class",
+    "authorized_at_ms",
+    "authorized_by",
+    "max_age_ms"
+  ],
+  "additionalProperties": false
+}

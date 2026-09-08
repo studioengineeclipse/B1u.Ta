@@ -1,0 +1,12 @@
+{
+  "name": "@b1/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Canonical B1 contract: IR, records, quality, continuity. Source of the generated JSON Schema consumed by all fourteen languages.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "generate": "node dist/generate.js",
+    "conform": "node dist/conform.js"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b1.local/schema/failure-localization",
+  "title": "FailureLocalization",
+  "type": "object",
+  "properties": {
+    "failure_type": {
+      "enum": [
+        "IDENTITY_DRIFT",
+        "ANATOMY_FAILURE",
+        "MOTION_FAILURE",
+        "PHYSICS_FAILURE",
+        "CAMERA_FAILURE",
+        "DEPTH_FAILURE",
+        "OCCLUSION_FAILURE",
+        "LIGHTING_FAILURE",
+        "REFERENCE_FAILURE",
+        "STYLE_FAILURE",
+        "TEMPORAL_DISCONTINUITY",
+        "OBJECT_PERSISTENCE_FAILURE",
+        "ENVIRONMENT_DRIFT",
+        "AUDIO_FAILURE",
+        "NARRATIVE_FAILURE",
+        "PROVIDER_LIMITATION",
+        "UNKNOWN"
+      ]
+    },
+    "failing_dimensions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "time_window_ms": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "integer",
+          "x-b1-unit": "ms"
+        },
+        "end": {
+          "type": "integer",
+          "x-b1-unit": "ms"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    },
+    "spatial_region": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "x_px": {
+              "type": "integer",
+              "x-b1-unit": "px"
+            },
+            "y_px": {
+              "type": "integer",
+              "x-b1-unit": "px"
+            },
+            "w_px": {
+              "type": "integer",
+              "x-b1-unit": "px"
+            },
+            "h_px": {
+              "type": "integer",
+              "x-b1-unit": "px"
+            }
+          },
+          "required": [
+            "x_px",
+            "y_px",
+            "w_px",
+            "h_px"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence_ppm": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000,
+      "x-b1-unit": "ppm"
+    },
+    "suggested_repair": {
+      "type": "string",
+      "description": "Targets only the failing dimensions. A prompt that worked is not rewritten wholesale."
+    }
+  },
+  "required": [
+    "failure_type",
+    "failing_dimensions",
+    "time_window_ms",
+    "spatial_region",
+    "evidence",
+    "confidence_ppm",
+    "suggested_repair"
+  ],
+  "additionalProperties": false
+}

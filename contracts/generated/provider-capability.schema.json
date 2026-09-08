@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b1.local/schema/provider-capability",
+  "title": "ProviderCapability",
+  "type": "object",
+  "properties": {
+    "provider_id": {
+      "type": "string"
+    },
+    "route": {
+      "enum": [
+        "A_OFFICIAL_SEEDANCE",
+        "B_NETA_ROUTER",
+        "C_NETA_NATIVE",
+        "D_OTHER_AUTHORIZED",
+        "E_PLANNING_ONLY"
+      ]
+    },
+    "auth_method": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "base_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "available_models": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "input_modalities": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "enum": [
+              "TEXT",
+              "IMAGE",
+              "VIDEO",
+              "AUDIO"
+            ]
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "output_modalities": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "enum": [
+              "VIDEO",
+              "IMAGE",
+              "AUDIO"
+            ]
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "duration_limits_ms": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "integer",
+              "x-b1-unit": "ms"
+            },
+            "max": {
+              "type": "integer",
+              "x-b1-unit": "ms"
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "resolution_limits": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "max_width_px": {
+              "type": "integer",
+              "x-b1-unit": "px"
+            },
+            "max_height_px": {
+              "type": "integer",
+              "x-b1-unit": "px"
+            }
+          },
+          "required": [
+            "max_width_px",
+            "max_height_px"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reference_limits": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "max_references": {
+              "type": "integer",
+              "x-b1-unit": "count"
+            }
+          },
+          "required": [
+            "max_references"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "extension_support": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "audio_support": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "currently_verified_at_ms": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "x-b1-unit": "ms"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "evidence_source": {
+      "type": "string",
+      "description": "How each populated field was established"
+    },
+    "contract_status": {
+      "enum": [
+        "VERIFIED",
+        "CONTRACT_UNVERIFIED",
+        "UNKNOWN"
+      ]
+    },
+    "credential_present": {
+      "type": "boolean",
+      "description": "Credential existence. Never conflated with entitlement."
+    },
+    "entitlement_observed": {
+      "anyOf": [
+        {
+          "type": "boolean",
+          "description": "Null until a capability query actually succeeded"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "provider_id",
+    "route",
+    "auth_method",
+    "base_url",
+    "available_models",
+    "input_modalities",
+    "output_modalities",
+    "duration_limits_ms",
+    "resolution_limits",
+    "reference_limits",
+    "extension_support",
+    "audio_support",
+    "currently_verified_at_ms",
+    "evidence_source",
+    "contract_status",
+    "credential_present",
+    "entitlement_observed"
+  ],
+  "additionalProperties": false
+}

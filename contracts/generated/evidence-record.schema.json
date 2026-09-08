@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b1.local/schema/evidence-record",
+  "title": "EvidenceRecord",
+  "type": "object",
+  "properties": {
+    "record_id": {
+      "type": "string",
+      "pattern": "^b1c1:[0-9a-f]{64}$"
+    },
+    "source": {
+      "type": "string",
+      "description": "e.g. sora_observation, provider_experiment"
+    },
+    "observation": {
+      "type": "string"
+    },
+    "confidence_ppm": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000,
+      "x-b1-unit": "ppm"
+    },
+    "conditions": {
+      "type": "string"
+    },
+    "applicable_provider": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "transferability": {
+      "enum": [
+        "PROVIDER_SPECIFIC",
+        "HYPOTHESIS_ONLY",
+        "CROSS_PROVIDER_OBSERVED",
+        "UNKNOWN"
+      ]
+    },
+    "failure_cases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recorded_at_ms": {
+      "type": "integer",
+      "x-b1-unit": "ms"
+    },
+    "origin": {
+      "enum": [
+        "U",
+        "M",
+        "P",
+        "E",
+        "UNKNOWN"
+      ]
+    }
+  },
+  "required": [
+    "record_id",
+    "source",
+    "observation",
+    "confidence_ppm",
+    "conditions",
+    "applicable_provider",
+    "transferability",
+    "failure_cases",
+    "recorded_at_ms",
+    "origin"
+  ],
+  "additionalProperties": false
+}

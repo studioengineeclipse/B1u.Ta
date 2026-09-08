@@ -1,0 +1,14 @@
+{
+  "contract_version": "b1-contracts/1",
+  "schemas": {
+    "b1-video-ir": "ce0f3f69f8554c5c238e0809815e565cfdba73568f81ae8ebfcc7715971c5eba",
+    "ledger-record": "090d7aa8c21c4a9b7fa245ee6425bb250a005acab7970423432f741d356a0b90",
+    "authority-envelope": "52aa5b5e82e53d77f55278dc78280f139c9477a2dcb0ee942efb82129a010033",
+    "provider-capability": "b84ff32f8aa0c302ae63ce38d2c67bb957e749a56dfbb090d3fb4c9b9c33f05d",
+    "evidence-record": "cc0b1ea64653a037ccf64daae1390955f4d2ba7901581d311d76a25a1d9be007",
+    "generation-package": "5a8395154e58c8106a5a2bbac1a9c064cd9dac2a8a8354e286f4c93784dfcd51",
+    "quality-vector": "a76c4c73f57e3ccb3d54ecae1bf458a88cf96b402aaa09da4285d0bcb641a637",
+    "continuity-state": "518ac0d9c5e90b832129333211df239f4e1fff632f90dcbafd50416715327ff0",
+    "failure-localization": "cd06d184dfe9de41c762c1e558039fbfd37a93d908f005dc292802c23e3a5e95"
+  }
+}

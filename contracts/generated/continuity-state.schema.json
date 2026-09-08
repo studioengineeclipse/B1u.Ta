@@ -1,0 +1,475 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b1.local/schema/continuity-state",
+  "title": "ContinuityState",
+  "type": "object",
+  "properties": {
+    "segment_id": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string",
+      "pattern": "^b1c1:[0-9a-f]{64}$",
+      "description": "The ledger record that established this as verified history"
+    },
+    "subject_positions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "position_mm": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer",
+                "x-b1-unit": "mm"
+              },
+              "y": {
+                "type": "integer",
+                "x-b1-unit": "mm"
+              },
+              "z": {
+                "type": "integer",
+                "x-b1-unit": "mm"
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "z"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "subject_id",
+          "position_mm"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "subject_orientations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "orientation_mdeg": {
+            "type": "object",
+            "properties": {
+              "pan": {
+                "type": "integer",
+                "x-b1-unit": "mdeg"
+              },
+              "tilt": {
+                "type": "integer",
+                "x-b1-unit": "mdeg"
+              },
+              "roll": {
+                "type": "integer",
+                "x-b1-unit": "mdeg"
+              }
+            },
+            "required": [
+              "pan",
+              "tilt",
+              "roll"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "subject_id",
+          "orientation_mdeg"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "body_configuration": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "configuration": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_id",
+          "configuration"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "velocities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "velocity_mm_per_s": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer",
+                "x-b1-unit": "mm"
+              },
+              "y": {
+                "type": "integer",
+                "x-b1-unit": "mm"
+              },
+              "z": {
+                "type": "integer",
+                "x-b1-unit": "mm"
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "z"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "subject_id",
+          "velocity_mm_per_s"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "angular_velocities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "angular_mdeg_per_s": {
+            "type": "object",
+            "properties": {
+              "pan": {
+                "type": "integer",
+                "x-b1-unit": "mdeg"
+              },
+              "tilt": {
+                "type": "integer",
+                "x-b1-unit": "mdeg"
+              },
+              "roll": {
+                "type": "integer",
+                "x-b1-unit": "mdeg"
+              }
+            },
+            "required": [
+              "pan",
+              "tilt",
+              "roll"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "subject_id",
+          "angular_mdeg_per_s"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "active_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_id",
+          "action",
+          "phase"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "contact_states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "contact_with": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_id",
+          "contact_with",
+          "kind"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "carried_objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string"
+          },
+          "object_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject_id",
+          "object_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "clothing_state": {
+      "type": "string"
+    },
+    "hair_state": {
+      "type": "string"
+    },
+    "damage_or_deformation_state": {
+      "type": "string"
+    },
+    "environment_state": {
+      "type": "string"
+    },
+    "object_positions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "object_id": {
+            "type": "string"
+          },
+          "position_mm": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer",
+                "x-b1-unit": "mm"
+              },
+              "y": {
+                "type": "integer",
+                "x-b1-unit": "mm"
+              },
+              "z": {
+                "type": "integer",
+                "x-b1-unit": "mm"
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "z"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "object_id",
+          "position_mm"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "camera_position_mm": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "x-b1-unit": "mm"
+        },
+        "y": {
+          "type": "integer",
+          "x-b1-unit": "mm"
+        },
+        "z": {
+          "type": "integer",
+          "x-b1-unit": "mm"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "additionalProperties": false
+    },
+    "camera_orientation_mdeg": {
+      "type": "object",
+      "properties": {
+        "pan": {
+          "type": "integer",
+          "x-b1-unit": "mdeg"
+        },
+        "tilt": {
+          "type": "integer",
+          "x-b1-unit": "mdeg"
+        },
+        "roll": {
+          "type": "integer",
+          "x-b1-unit": "mdeg"
+        }
+      },
+      "required": [
+        "pan",
+        "tilt",
+        "roll"
+      ],
+      "additionalProperties": false
+    },
+    "camera_velocity_mm_per_s": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "x-b1-unit": "mm"
+        },
+        "y": {
+          "type": "integer",
+          "x-b1-unit": "mm"
+        },
+        "z": {
+          "type": "integer",
+          "x-b1-unit": "mm"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "additionalProperties": false
+    },
+    "focal_behavior": {
+      "type": "string"
+    },
+    "lighting_state": {
+      "type": "string"
+    },
+    "particle_state": {
+      "type": "string"
+    },
+    "fluid_state": {
+      "type": "string"
+    },
+    "audio_phase": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "narrative_state": {
+      "type": "string"
+    },
+    "unresolved_motion": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Must be non-empty for an extendable ending"
+    },
+    "unresolved_causal_events": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "final_frame_visual_signature": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "From core/c/libb1sig. Genuinely measured, unlike most fields here."
+    },
+    "measurement_basis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "basis": {
+            "enum": [
+              "MEASURED",
+              "DECLARED",
+              "INFERRED",
+              "PROXY",
+              "UNAVAILABLE"
+            ]
+          }
+        },
+        "required": [
+          "field",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "segment_id",
+    "source_record_id",
+    "subject_positions",
+    "subject_orientations",
+    "body_configuration",
+    "velocities",
+    "angular_velocities",
+    "active_actions",
+    "contact_states",
+    "carried_objects",
+    "clothing_state",
+    "hair_state",
+    "damage_or_deformation_state",
+    "environment_state",
+    "object_positions",
+    "camera_position_mm",
+    "camera_orientation_mdeg",
+    "camera_velocity_mm_per_s",
+    "focal_behavior",
+    "lighting_state",
+    "particle_state",
+    "fluid_state",
+    "audio_phase",
+    "narrative_state",
+    "unresolved_motion",
+    "unresolved_causal_events",
+    "final_frame_visual_signature",
+    "measurement_basis"
+  ],
+  "additionalProperties": false
+}

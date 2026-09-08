@@ -1,0 +1,18 @@
+# Build outputs — the participation probe rebuilds these from source.
+dist/
+build/
+target/
+bin/
+obj/
+*.jar
+*.class
+*.o
+*.a
+*.so
+node_modules/
+__pycache__/
+*.pyc
+.dart_tool/
+
+# Runtime state that is regenerated, not authored.
+state/participation.json
