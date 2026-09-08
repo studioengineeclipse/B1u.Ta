@@ -119,6 +119,13 @@ struct Finding {
 
 struct AnalysisResult {
     let findings: [Finding]
+    /// How many bindings were examined.
+    ///
+    /// Reported because "no findings" is ambiguous without it: an analysis that checked three
+    /// bindings and found nothing wrong and one that checked none are very different facts, and
+    /// only the count distinguishes them. Absence of evidence is not evidence of admissibility.
+    let bindingsChecked: Int
+
     var admissible: Bool {
         !findings.contains { $0.kind != .overlappingAuthority }
     }
@@ -187,7 +194,7 @@ func analyze(_ bindings: [ReferenceBinding]) -> AnalysisResult {
                 + "which is a decision to make deliberately rather than discover"))
     }
 
-    return AnalysisResult(findings: findings)
+    return AnalysisResult(findings: findings, bindingsChecked: bindings.count)
 }
 
 func bindingsFromJson(_ v: Json) -> [ReferenceBinding] {
@@ -222,6 +229,7 @@ func resultToJson(_ r: AnalysisResult) -> Json {
     }
     return .object([
         "admissible": .bool(r.admissible),
+        "bindings_checked": .int(Int64(r.bindingsChecked)),
         "findings": .array(findings),
     ])
 }

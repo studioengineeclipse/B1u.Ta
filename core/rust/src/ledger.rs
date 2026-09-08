@@ -385,6 +385,34 @@ impl fmt::Display for ChainError {
     }
 }
 
+#[derive(Debug)]
+pub enum SealError {
+    NotAnObject,
+    /// The body claimed a field the chain assigns.
+    ReservedField(&'static str),
+    MissingFields(Vec<String>),
+    Canon(B1Error),
+    Io(std::io::Error),
+}
+
+impl fmt::Display for SealError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SealError::NotAnObject => write!(f, "a record body must be a JSON object"),
+            SealError::ReservedField(name) => write!(
+                f,
+                "the body sets `{name}`, which the chain assigns; a caller that picks its own \
+                 position in history is not recording, it is forging"
+            ),
+            SealError::MissingFields(fields) => {
+                write!(f, "the body is missing required field(s): {}", fields.join(", "))
+            }
+            SealError::Canon(e) => write!(f, "body is not canonicalizable: {}", e.token()),
+            SealError::Io(e) => write!(f, "{e}"),
+        }
+    }
+}
+
 pub struct Ledger {
     path: String,
 }
@@ -427,13 +455,69 @@ impl Ledger {
     /// Appends a sealed record. The file stores each record's canonical form, so the bytes on disk
     /// are reproducible from the record and verification is a byte comparison.
     pub fn append(&self, record: &Record) -> std::io::Result<()> {
-        let line = crate::canon::canonicalize(&record.to_json())
+        self.append_value(&record.to_json())
+    }
+
+    /// Appends an already-sealed record value.
+    ///
+    /// Exists so a caller in another language can supply record *content* over IF-1 while sealing
+    /// and chaining stay here. Splitting it the other way — letting the caller compute its own
+    /// `record_id` and `prev_link` — would move the integrity guarantee out of the component that
+    /// exists to hold it.
+    pub fn append_value(&self, value: &Json) -> std::io::Result<()> {
+        let line = crate::canon::canonicalize(value)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e.token()))?;
         if let Some(parent) = Path::new(&self.path).parent() {
             std::fs::create_dir_all(parent)?;
         }
         let mut f = OpenOptions::new().create(true).append(true).open(&self.path)?;
         writeln!(f, "{line}")
+    }
+
+    /// Seals a caller-supplied record body and appends it, returning the assigned `record_id`.
+    ///
+    /// `seq`, `prev_link` and `record_id` are the chain's to assign. A body arriving with any of
+    /// them set is rejected rather than overwritten: accepting one would let a caller claim a
+    /// position in history, and silently replacing it would hide that they tried.
+    pub fn seal_and_append(&self, body: &Json) -> Result<String, SealError> {
+        let Json::Obj(members) = body else {
+            return Err(SealError::NotAnObject);
+        };
+
+        for reserved in ["seq", "prev_link", "record_id"] {
+            if members.contains_key(reserved) {
+                return Err(SealError::ReservedField(reserved));
+            }
+        }
+
+        const REQUIRED: [&str; 9] = [
+            "goal", "derived_need", "origin", "authority", "executor", "execution_identity",
+            "attempt_identity", "action", "present_validity",
+        ];
+        let missing: Vec<&str> = REQUIRED
+            .into_iter()
+            .filter(|f| !members.contains_key(*f))
+            .collect();
+        if !missing.is_empty() {
+            return Err(SealError::MissingFields(
+                missing.iter().map(|s| s.to_string()).collect(),
+            ));
+        }
+
+        let seq = self.next_seq().map_err(SealError::Io)?;
+        let prev = self.tail_link().map_err(SealError::Io)?;
+
+        let mut sealed = members.clone();
+        sealed.insert("seq".into(), Json::Int(seq));
+        sealed.insert("prev_link".into(), Json::s(prev));
+
+        let body_value = Json::Obj(sealed.clone());
+        let record_id = b1c1(&digest_value(&body_value).map_err(SealError::Canon)?);
+
+        sealed.insert("record_id".into(), Json::s(record_id.clone()));
+        self.append_value(&Json::Obj(sealed)).map_err(SealError::Io)?;
+
+        Ok(record_id)
     }
 
     /// Walks the chain from seq 0, recomputing every digest and link.

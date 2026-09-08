@@ -14,6 +14,9 @@ __pycache__/
 *.pyc
 .dart_tool/
 
-# Runtime state that is regenerated, not authored.
+# Runtime state that is regenerated, not authored. See state/README.md — the ledger in
+# particular is per-deployment history whose integrity guarantee does not survive a merge.
 state/participation.json
 state/packages/
+state/ledger.jsonl
+state/executive-handoff.md

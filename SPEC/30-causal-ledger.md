@@ -78,6 +78,35 @@ accidental edits, and a component quietly "fixing" history — not against an ad
 access and intent. Stating that limit is required by law L8; claiming cryptographic immutability
 here would be exactly the kind of unearned certainty this system exists to prevent.
 
+## 3a. Recording is not a separately authorized effect
+
+Appending to the ledger is the **recording mechanism**, not an additional persistent effect
+requiring its own authority envelope (`40-authority-gate.md`).
+
+This has to be stated, because the alternative does not terminate: if writing the record were itself
+a persistent effect, recording an action would require authorizing the recording, whose record would
+require authorizing that recording, and so on. The same reasoning covers the compiled generation
+package under `state/packages/` — local, derived, recomputable from the IR, and never leaving the
+machine.
+
+What the gate *is* consulted for is the effect that actually reaches outside: a provider call that
+spends credits, a publication, a deployment, an external write. Under Route E that gate closes, and
+its own words become the recorded reason generation did not happen — which is the point. A gate
+consulted only where it always opens is decoration.
+
+The carve-out is deliberately narrow. It covers append-only local audit state and derived planning
+artifacts. It does not cover deletion, rewriting, or anything transmitted.
+
+## 3b. Sealing belongs to the ledger, not to its callers
+
+A component in another language supplies a record's *content* over IF-1; it does not supply the
+record's position in history. `seq`, `prev_link` and `record_id` are assigned by the ledger.
+
+A body arriving with any of those fields set is **rejected**, not silently overwritten. A caller
+that picks its own sequence number or link is not recording an action, it is choosing where in the
+chain to appear — and quietly correcting the field would hide that it was attempted. The refusal
+names the field.
+
 ## 4. Storage
 
 `state/ledger.jsonl`, one canonical record per line, append-only. JSON Lines because it is

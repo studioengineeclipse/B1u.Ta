@@ -7,11 +7,13 @@
 #   rake conform:matrix  show the full language x fixture matrix
 #   rake conform:bless   (re)write expected.json from cross-implementation agreement
 #   rake probe           derive the participation status table from what actually runs
-#   rake verify          build, conform, probe
+#   rake test            run every component's own test suite
+#   rake verify          build, test, conform, probe
 
 $LOAD_PATH.unshift File.expand_path('surfaces/ruby/lib', __dir__)
 
 require 'fileutils'
+require 'open3'
 require 'b1/conformance'
 
 RED = "\e[31m"
@@ -132,7 +134,7 @@ task :probe do
 end
 
 desc 'Build, conform, probe'
-task verify: %i[build conform probe]
+task verify: %i[build test conform probe]
 
 desc 'Generate the executive handoff from repository state'
 task :report do
@@ -147,4 +149,62 @@ desc 'Compile a scene written in the authoring DSL'
 task :compile, [:scene] do |_t, args|
   abort(bad('usage: rake compile[examples/scene.b1.rb]')) if args[:scene].nil?
   sh "ruby surfaces/ruby/compile_dsl.rb #{args[:scene]}"
+end
+
+# Every component's own tests. The conformance corpus proves the fourteen languages agree on the
+# contract; these prove each component does the job it owns. Both are needed: a language can
+# canonicalize perfectly and still get its actual responsibility wrong.
+COMPONENT_TESTS = [
+  ['C kernel',            'make -s -C core/c test'],
+  ['C++ analyzer',        'make -s -C core/cpp test'],
+  ['Rust trusted core',   'cargo test --quiet --offline --manifest-path core/rust/Cargo.toml'],
+  ['Python quality',      'python3 -m unittest discover -s engine/python/tests -q'],
+  ['Kotlin continuity',   'java -cp engine/jvm/kotlin/build/b1continuity.jar:engine/jvm/java/build b1.continuity.MainKt selftest'],
+  ['Swift references',    'engine/swift/build/b1reference selftest'],
+  ['C# convergence',      'dotnet engine/csharp/B1.Convergence/bin/Release/net8.0/B1.Convergence.dll selftest'],
+  ['PHP evidence',        './surfaces/php/run_tests.sh'],
+  ['Dart presenter',      'cd engine/dart && dart run bin/conform.dart selftest']
+].freeze
+
+# Extracts an accurate count rather than the first thing that looks like one.
+#
+# A single loose regex is wrong here in a way that matters: cargo prints a "test result" line per
+# binary, most of them with zero tests, so matching the first left the Rust suite reporting
+# "0 tests" while it was actually running fifteen. A summary that can silently say zero for a
+# passing suite hides the empty run it exists to reveal.
+def summarize(output)
+  cargo = output.scan(/test result: ok\. (\d+) passed/).flatten.map(&:to_i).sum
+  return "#{cargo} tests" if cargo.positive?
+
+  unittest = output[/Ran (\d+) tests?/, 1]
+  return "#{unittest} tests" if unittest
+
+  checks = output.scan(/^\s+ok\s{2,}\S/).size
+  return "#{checks} checks" if checks.positive?
+
+  'passed (no count reported)'
+end
+
+desc 'Run every component test suite'
+task :test do
+  failures = []
+  COMPONENT_TESTS.each do |name, cmd|
+    print format('%-22s ', name)
+    out, err, status = Open3.capture3({ 'PATH' => B1::Conformance.enriched_path }, cmd, chdir: __dir__)
+    if status.success?
+      puts ok(summarize(out + err))
+    else
+      puts bad('FAILED')
+      failures << [name, (out + err).lines.last(12).join.strip]
+    end
+  end
+
+  unless failures.empty?
+    failures.each do |name, detail|
+      puts bad("\n#{name}:")
+      puts "#{DIM}#{detail}#{OFF}"
+    end
+    abort(bad("#{failures.size} component suite(s) failed"))
+  end
+  puts ok("\nall #{COMPONENT_TESTS.size} component suites passed")
 end

@@ -42,6 +42,7 @@ contract is what moves it to Route A–D; see `SPEC/70-provider-routes.md`.
 | `surfaces/ruby` | Authoring DSL, polyglot build graph, report generation |
 | `surfaces/web` | Zero-build review dashboard |
 | `conformance/` | The corpus that proves all fourteen languages agree |
+| `SPEC/90-convergence-log.md` | The audit record: every defect, and what found it |
 | `state/` | Ledger, continuity snapshots, participation status |
 
 ## The keystone: B1-CANON-1
@@ -62,10 +63,24 @@ one. Two design decisions make that achievable rather than aspirational:
 
 ```sh
 rake build      # build every language that has a build step
+rake test       # every component's own suite
 rake conform    # every language against every fixture; fails on any divergence
 rake probe      # derive the participation status table from what actually runs
-rake verify     # all three
+rake verify     # all four
 ```
+
+And to run the loop and inspect what it recorded:
+
+```sh
+b1 discover                                   # capability map and selected route
+b1 plan examples/shot-02-continuation.json    # -> a package, and one ledger record
+b1ledger verify                               # walk the chain, recomputing every digest and link
+b1ledger show                                 # one line per record
+```
+
+A planning run checks reference roles before it compiles, asks the authority gate whether a
+provider call is authorized, and appends a sealed record. Under Route E the gate closes, and its
+own words become the recorded reason generation did not happen — the gate is asked, not assumed.
 
 The conformance corpus is built to break naive implementations: ASCII ordering traps, 2^53
 boundary integers, control characters, astral-plane scalars, and negative fixtures for every error

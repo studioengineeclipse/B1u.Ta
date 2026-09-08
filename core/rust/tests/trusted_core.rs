@@ -215,6 +215,129 @@ fn l3_receipt_alone_is_never_verified() {
     assert_eq!(r.outcome(), Outcome::Verified);
 }
 
+// --- caller-supplied bodies: sealing and chaining stay here -------------------
+
+fn body(summary: &str) -> Json {
+    Json::obj(vec![
+        ("goal", Json::s("Produce a verified continuation segment")),
+        ("derived_need", Json::s("The orchestrator compiled a package")),
+        ("origin", Json::s("M")),
+        ("causal_parents", Json::Arr(vec![])),
+        ("authority", Json::s("system")),
+        ("executor", Json::s("b1-orchestrator")),
+        ("execution_identity", Json::s("local/process-1")),
+        ("attempt_identity", Json::s("attempt-1")),
+        (
+            "action",
+            Json::obj(vec![
+                ("kind", Json::s("compile_package")),
+                ("summary", Json::s(summary)),
+                ("target", Json::s("segment-01")),
+                ("persistent", Json::Bool(false)),
+            ]),
+        ),
+        ("receipt", Json::Null),
+        ("observed_effect", Json::Null),
+        ("objective_postcondition", Json::Null),
+        ("present_validity", Json::s("WORKING_ASSUMPTION")),
+        ("observed_at_ms", Json::Int(1_700_000_000_000)),
+    ])
+}
+
+#[test]
+fn seal_and_append_assigns_position_and_chains() {
+    let path = temp_path("sealed");
+    let _ = std::fs::remove_file(&path);
+    let ledger = Ledger::new(&path);
+
+    let first = ledger.seal_and_append(&body("first")).unwrap();
+    let second = ledger.seal_and_append(&body("second")).unwrap();
+    assert_ne!(first, second);
+
+    // The chain the caller never touched verifies.
+    assert!(matches!(ledger.verify().unwrap(), Ok(2)));
+
+    let lines = ledger.read_lines().unwrap();
+    let rec0 = b1_ledger::canon::parse(&lines[0]).unwrap();
+    let rec1 = b1_ledger::canon::parse(&lines[1]).unwrap();
+
+    assert_eq!(rec0.get("seq").and_then(Json::as_int), Some(0));
+    assert_eq!(rec1.get("seq").and_then(Json::as_int), Some(1));
+    assert_eq!(
+        rec0.get("prev_link").and_then(Json::as_str),
+        Some(b1_ledger::canon::ZERO_LINK)
+    );
+    assert_eq!(
+        rec1.get("prev_link").and_then(Json::as_str),
+        Some(first.as_str()),
+        "the second record must link to the first"
+    );
+    assert_eq!(rec1.get("record_id").and_then(Json::as_str), Some(second.as_str()));
+}
+
+#[test]
+fn seal_and_append_refuses_a_body_claiming_its_own_position() {
+    let path = temp_path("forged");
+    let _ = std::fs::remove_file(&path);
+    let ledger = Ledger::new(&path);
+    ledger.seal_and_append(&body("genuine")).unwrap();
+
+    // A caller that picks its own seq, link or id is not recording — it is choosing where in
+    // history to appear. Overwriting the field silently would hide the attempt.
+    for reserved in ["seq", "prev_link", "record_id"] {
+        let Json::Obj(mut members) = body("forged") else { unreachable!() };
+        members.insert(
+            reserved.to_string(),
+            if reserved == "seq" { Json::Int(0) } else { Json::s("b1c1:".to_string() + &"0".repeat(64)) },
+        );
+        let result = ledger.seal_and_append(&Json::Obj(members));
+        assert!(
+            matches!(result, Err(b1_ledger::ledger::SealError::ReservedField(f)) if f == reserved),
+            "a body setting `{reserved}` must be refused, got {result:?}"
+        );
+    }
+
+    // The refusals left the chain untouched.
+    assert!(matches!(ledger.verify().unwrap(), Ok(1)));
+}
+
+#[test]
+fn seal_and_append_refuses_an_incomplete_body() {
+    let path = temp_path("incomplete");
+    let _ = std::fs::remove_file(&path);
+    let ledger = Ledger::new(&path);
+
+    let Json::Obj(mut members) = body("missing pieces") else { unreachable!() };
+    members.remove("executor");
+    members.remove("attempt_identity");
+
+    match ledger.seal_and_append(&Json::Obj(members)) {
+        Err(b1_ledger::ledger::SealError::MissingFields(fields)) => {
+            assert!(fields.contains(&"executor".to_string()));
+            assert!(fields.contains(&"attempt_identity".to_string()));
+        }
+        other => panic!("an incomplete body must be refused, got {other:?}"),
+    }
+    assert_eq!(ledger.read_lines().unwrap().len(), 0);
+}
+
+#[test]
+fn a_sealed_record_still_classifies_as_not_executed() {
+    let path = temp_path("classify");
+    let _ = std::fs::remove_file(&path);
+    let ledger = Ledger::new(&path);
+    ledger.seal_and_append(&body("nothing was dispatched")).unwrap();
+
+    let line = &ledger.read_lines().unwrap()[0];
+    let rec = b1_ledger::canon::parse(line).unwrap();
+
+    // Receipt, observed effect and postcondition all absent: there is nothing here that could be
+    // mistaken for a success.
+    for f in ["receipt", "observed_effect", "objective_postcondition"] {
+        assert!(matches!(rec.get(f), Some(Json::Null)), "{f} should be null");
+    }
+}
+
 // --- S3: the authority gate ---------------------------------------------------
 
 fn envelope(state_digest: &str, plan_digest: &str) -> Envelope {
