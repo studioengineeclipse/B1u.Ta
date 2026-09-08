@@ -186,6 +186,8 @@ def probe_language(lang: dict, expected: dict) -> dict:
             "independent": "independent implementation, so agreement is a genuine cross-check",
             "via_c_abi": "via the C ABI to libb1sig, so this confirms the ABI boundary rather than "
                          "providing an independent check",
+            "via_jvm": "via the JVM boundary to the Java implementation, so this confirms that "
+                       "interface rather than providing an independent check",
         }.get(rec["canon"], "provenance unrecorded")
         rec["status_basis"] = f"agrees on all {rec['fixtures_checked']} fixtures — {proof}"
     elif rec["divergences"]:

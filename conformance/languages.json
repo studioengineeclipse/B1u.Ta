@@ -79,9 +79,9 @@
       "name": "Kotlin",
       "responsibility": "Continuity engine: terminal state, priority lattice",
       "dir": "engine/jvm/kotlin",
-      "build": "kotlinc engine/jvm/kotlin/src/main/kotlin -include-runtime -d engine/jvm/kotlin/build/b1continuity.jar",
-      "conform": "java -jar engine/jvm/kotlin/build/b1continuity.jar",
-      "canon": "independent"
+      "build": "kotlinc engine/jvm/kotlin/src/main/kotlin -classpath engine/jvm/java/build -include-runtime -d engine/jvm/kotlin/build/b1continuity.jar",
+      "conform": "java -cp engine/jvm/kotlin/build/b1continuity.jar:engine/jvm/java/build b1.continuity.MainKt conform",
+      "canon": "via_jvm"
     },
     {
       "id": "swift",
@@ -129,5 +129,5 @@
       "canon": "independent"
     }
   ],
-  "canon_provenance_note": "How each language obtains its digest. \"normative\" is the reference implementation; \"independent\" is a separate implementation whose agreement is a genuine check on it; \"via_c_abi\" links libb1sig, so its agreement confirms the ABI boundary rather than providing a second opinion."
+  "canon_provenance_note": "How each language obtains its digest. \"normative\" is the reference implementation; \"independent\" is a separate implementation whose agreement is a genuine check on it; \"via_c_abi\" and \"via_jvm\" call the owning implementation across an interface, so agreement confirms that boundary works rather than providing a second opinion."
 }

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>B1.Convergence</RootNamespace>
+    <AssemblyName>B1.Convergence</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- No package references: the repository builds offline, so restore must have nothing to
+         fetch. SHA-256 comes from the base class library. -->
+    <RestorePackages>false</RestorePackages>
+  </PropertyGroup>
+
+</Project>
