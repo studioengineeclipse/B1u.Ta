@@ -72,6 +72,14 @@ w(
   }),
 );
 
+// \u escapes, including a surrogate PAIR. This fixture exists because it caught a real divergence:
+// a UTF-16-native language joins 🎬 into one astral scalar, while a language whose `chr`
+// produces lone surrogates leaves two unpaired code points and rejects the document. Both
+// implementations agreed the document was well-formed and disagreed on what it meant — the exact
+// silent failure the corpus is for. The digest here must equal that of the literal emoji form.
+w("unicode-escape-pair.json", '{"escaped":"\\ud83c\\udfac","literal":"🎬"}');
+w("unicode-escape-basic.json", '{"a":"\\u00e9\\u0041\\u007a"}');
+
 // Deep but legal (limit is 64).
 {
   let v = "1";
@@ -122,6 +130,9 @@ neg("neg-duplicate-key.json", '{"a":1,"b":2,"a":3}');
 neg("neg-leading-zero.json", '{"a":01}');
 neg("neg-trailing-input.json", '{"a":1} {"b":2}');
 neg("neg-unterminated.json", '{"a":"x');
+neg("neg-lone-high-surrogate.json", '{"a":"\\ud83c"}');
+neg("neg-lone-low-surrogate.json", '{"a":"\\udfac"}');
+neg("neg-lone-high-then-char.json", '{"a":"\\ud83cx"}');
 
 {
   let v = "1";

@@ -22,7 +22,9 @@ module B1
     MANIFEST = File.join(ROOT, 'conformance', 'languages.json')
 
     DIGEST_RE = /\A[0-9a-f]{64}\z/
-    B1_ERR_RE = /\AB1_ERR_[A-Z_]+\z/
+    # Digits matter: B1_ERR_INVALID_UTF8 ends in one. Omitting them made a correct rejection look
+    # like an unavailable language, which understates participation instead of failing loudly.
+    B1_ERR_RE = /\AB1_ERR_[A-Z0-9_]+\z/
 
     Result = Struct.new(:digest, :error_token, :available, :detail, keyword_init: true)
 

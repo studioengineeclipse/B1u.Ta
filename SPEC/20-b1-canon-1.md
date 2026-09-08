@@ -65,6 +65,17 @@ U+000A → `\n`, U+000C → `\f`, U+000D → `\r`. Any other control character b
 with **lowercase** hex. Every other character is emitted literally as UTF-8. Do not escape `/`.
 Do not use `\uXXXX` for anything that has a literal form.
 
+**Surrogate pairs in `\u` escapes.** A `\uD800`–`\uDBFF` escape **MUST** be immediately followed by
+a `\uDC00`–`\uDFFF` escape, and the pair decodes to the single scalar it denotes. A high surrogate
+not followed by a low one, and a low surrogate appearing alone, are both rejected with
+`B1_ERR_INVALID_UTF8`.
+
+This is stated explicitly because it is a real divergence, not a theoretical one: an
+implementation whose character constructor yields lone surrogates (Python's `chr`) leaves two
+unpaired code points where a UTF-16-native implementation joins them into one astral scalar. Both
+consider the document well-formed and produce different digests. The consequence is normative:
+`{"a":"🎬"}` and `{"a":"🎬"}` **MUST** produce the same digest.
+
 Lone surrogates are rejected with `B1_ERR_INVALID_UTF8`.
 
 ### R4 — No insignificant whitespace

@@ -1,0 +1,26 @@
+[package]
+name = "b1-ledger"
+version = "1.0.0"
+edition = "2021"
+description = "Hash-chained causal ledger, authority/persistence gate, and P/E anomaly detector."
+
+# No dependencies, deliberately. This is the trusted core: the component that decides whether a
+# persistent effect may occur and whether history has been tampered with. Its supply chain is
+# exactly the Rust standard library, and the whole repository builds offline. SHA-256 and the
+# B1-CANON-1 codec are implemented here rather than pulled in — see src/sha256.rs and src/canon.rs.
+[dependencies]
+
+[lib]
+name = "b1_ledger"
+path = "src/lib.rs"
+
+[[bin]]
+name = "b1conform"
+path = "src/bin/b1conform.rs"
+
+[[bin]]
+name = "b1ledger"
+path = "src/bin/b1ledger.rs"
+
+[profile.release]
+overflow-checks = true

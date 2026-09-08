@@ -128,6 +128,33 @@
       ],
       "negative": true
     },
+    "neg-lone-high-surrogate.json": {
+      "kind": "error",
+      "error": "B1_ERR_INVALID_UTF8",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-lone-high-then-char.json": {
+      "kind": "error",
+      "error": "B1_ERR_INVALID_UTF8",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
+    "neg-lone-low-surrogate.json": {
+      "kind": "error",
+      "error": "B1_ERR_INVALID_UTF8",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": true
+    },
     "neg-negative-zero.json": {
       "kind": "error",
       "error": "B1_ERR_NONINTEGER_NUMBER",
@@ -185,6 +212,24 @@
     "strings-unicode.json": {
       "kind": "digest",
       "digest": "d45105946d0760f5a67d2a7dc4646cf30bb6f7bfea2640d3671499bed89532d8",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "unicode-escape-basic.json": {
+      "kind": "digest",
+      "digest": "b6e0cd67682596dc49100a42d9f79aa60d456af3ade460a8c18b6e5565602433",
+      "agreed_by": [
+        "python",
+        "typescript"
+      ],
+      "negative": false
+    },
+    "unicode-escape-pair.json": {
+      "kind": "digest",
+      "digest": "443730b2fd6a2991f488771c056a3e303c228b9e94b22d31f9fb959654fd4a1d",
       "agreed_by": [
         "python",
         "typescript"

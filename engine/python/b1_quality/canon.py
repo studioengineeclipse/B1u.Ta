@@ -173,6 +173,34 @@ class _Parser:
             raise B1Error("B1_ERR_NONINTEGER_NUMBER", f"out of range: {text}")
         return value
 
+    def _hex4(self) -> int:
+        hex4 = self.s[self.i:self.i + 4]
+        if len(hex4) != 4 or not all(h in "0123456789abcdefABCDEF" for h in hex4):
+            raise B1Error("B1_ERR_PARSE", f"bad \\u escape at {self.i}")
+        self.i += 4
+        return int(hex4, 16)
+
+    def _unicode_escape(self) -> str:
+        """Decode one \\uXXXX, joining a surrogate pair into a single scalar.
+
+        Python's ``chr`` will happily produce a lone surrogate, so a pair written as two escapes
+        would otherwise survive as two unpaired code points and be rejected later — while a
+        UTF-16-native language would join them and emit the astral character. That is a silent
+        cross-language digest divergence, so the pair is joined here at parse time.
+        """
+        cp = self._hex4()
+        if 0xD800 <= cp <= 0xDBFF:  # high surrogate: a low surrogate must follow
+            if self.s[self.i:self.i + 2] != "\\u":
+                raise B1Error("B1_ERR_INVALID_UTF8", "unpaired high surrogate")
+            self.i += 2
+            low = self._hex4()
+            if not (0xDC00 <= low <= 0xDFFF):
+                raise B1Error("B1_ERR_INVALID_UTF8", "high surrogate not followed by a low one")
+            return chr(0x10000 + ((cp - 0xD800) << 10) + (low - 0xDC00))
+        if 0xDC00 <= cp <= 0xDFFF:
+            raise B1Error("B1_ERR_INVALID_UTF8", "unpaired low surrogate")
+        return chr(cp)
+
     def _string(self) -> str:
         self.i += 1
         parts: list[str] = []
@@ -194,11 +222,7 @@ class _Parser:
                 if e in simple:
                     parts.append(simple[e])
                 elif e == "u":
-                    hex4 = self.s[self.i:self.i + 4]
-                    if len(hex4) != 4 or not all(h in "0123456789abcdefABCDEF" for h in hex4):
-                        raise B1Error("B1_ERR_PARSE", f"bad \\u escape at {self.i}")
-                    self.i += 4
-                    parts.append(chr(int(hex4, 16)))
+                    parts.append(self._unicode_escape())
                 else:
                     raise B1Error("B1_ERR_PARSE", f"bad escape \\{e}")
                 continue
